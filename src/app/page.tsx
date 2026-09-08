@@ -1,69 +1,102 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useMemo, useState } from "react";
+import ItemCard from "@/components/ItemCard";
+import { items } from "@/lib/mock-data";
+import type { ItemCategory } from "@/lib/types";
+
+const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
+
+export default function BrowsePage() {
+  const [query, setQuery] = useState("");
+  const [activeCategories, setActiveCategories] = useState<ItemCategory[]>([]);
+  const [availableOnly, setAvailableOnly] = useState(false);
+
+  function toggleCategory(category: ItemCategory) {
+    setActiveCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  }
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesQuery =
+        query.trim() === "" ||
+        item.title.toLowerCase().includes(query.toLowerCase()) ||
+        item.author?.toLowerCase().includes(query.toLowerCase());
+      const matchesCategory =
+        activeCategories.length === 0 || activeCategories.includes(item.category);
+      const matchesAvailability = !availableOnly || item.status === "Available";
+      return matchesQuery && matchesCategory && matchesAvailability;
+    });
+  }, [query, activeCategories, availableOnly]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 gap-8 px-6 py-10">
+      <aside className="w-56 shrink-0">
+        <h2 className="mb-3 font-serif text-lg font-semibold text-forest">Filters</h2>
+
+        <div className="mb-6">
+          <label htmlFor="search" className="mb-1 block text-sm font-medium text-forest/80">
+            Search
+          </label>
+          <input
+            id="search"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Title or author"
+            className="w-full rounded-md border border-sage-dark bg-white px-3 py-2 text-sm text-forest placeholder:text-forest/40 focus:border-forest focus:outline-none"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="mb-6">
+          <p className="mb-2 text-sm font-medium text-forest/80">Category</p>
+          <div className="flex flex-col gap-2">
+            {categories.map((category) => (
+              <label key={category} className="flex items-center gap-2 text-sm text-forest/80">
+                <input
+                  type="checkbox"
+                  checked={activeCategories.includes(category)}
+                  onChange={() => toggleCategory(category)}
+                  className="h-4 w-4 rounded border-sage-dark accent-forest"
+                />
+                {category}
+              </label>
+            ))}
+          </div>
         </div>
-      </main>
+
+        <label className="flex items-center gap-2 text-sm text-forest/80">
+          <input
+            type="checkbox"
+            checked={availableOnly}
+            onChange={(e) => setAvailableOnly(e.target.checked)}
+            className="h-4 w-4 rounded border-sage-dark accent-forest"
+          />
+          Available only
+        </label>
+      </aside>
+
+      <div className="flex-1">
+        <h1 className="mb-6 font-serif text-2xl font-semibold text-forest">
+          Browse Listings
+        </h1>
+
+        {filteredItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-sage-dark py-20 text-center">
+            <p className="text-forest/70">No items match — try widening your filters.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredItems.map((item) => (
+              <ItemCard key={item.id} item={item} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

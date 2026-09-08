@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Lora } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 
@@ -13,18 +13,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "ITEC 322",
-  description: "React + Tailwind frontend for ITEC 322",
+  title: "Campus Rental Hub",
+  description: "Peer-to-peer campus textbook & equipment rental hub",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-paper text-forest">
         <Navbar />
         <div className="flex flex-1 flex-col">{children}</div>
       </body>

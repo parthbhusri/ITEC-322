@@ -1,0 +1,120 @@
+import type { Item, RentalRecord } from "./types";
+
+export const CURRENT_USER = "Jordan Lee";
+
+export const items: Item[] = [
+  {
+    id: "1",
+    title: "Introduction to Algorithms",
+    author: "Cormen, Leiserson, Rivest, Stein",
+    isbn: "9780262046305",
+    category: "Textbook",
+    condition: "Good",
+    price: 18,
+    status: "Available",
+    description:
+      "Classic CLRS algorithms text. Some highlighting in chapters 1-6, otherwise clean.",
+    campusLocation: "Library — Main Entrance",
+    ownerName: "Priya Nair",
+    coverColor: "#2D6A4F",
+  },
+  {
+    id: "2",
+    title: "Organic Chemistry",
+    author: "Klein",
+    isbn: "9781119316179",
+    category: "Textbook",
+    condition: "Fair",
+    price: 22,
+    status: "Requested",
+    description:
+      "Loose-leaf edition, binder not included. Some water damage on back cover only.",
+    campusLocation: "Science Building Lobby",
+    ownerName: "Marcus Webb",
+    coverColor: "#B4471F",
+  },
+  {
+    id: "3",
+    title: "TI-84 Plus CE Graphing Calculator",
+    category: "Calculator",
+    condition: "Good",
+    price: 10,
+    status: "Available",
+    description: "Works perfectly, includes charging cable. Minor scuffs on the back.",
+    campusLocation: "Student Union",
+    ownerName: "Priya Nair",
+    coverColor: "#1B4332",
+  },
+  {
+    id: "4",
+    title: "Lab Coat (Size M)",
+    category: "Lab Equipment",
+    condition: "Good",
+    price: 6,
+    status: "Rented",
+    description: "White cotton-blend lab coat, freshly laundered, one owner.",
+    campusLocation: "Chemistry Building",
+    ownerName: "Aisha Rahman",
+    coverColor: "#A9BFA0",
+  },
+  {
+    id: "5",
+    title: "Digital Multimeter",
+    category: "Tool",
+    condition: "Fair",
+    price: 8,
+    status: "Available",
+    description: "Basic multimeter for circuits lab. Probes included, battery not.",
+    campusLocation: "Engineering Annex",
+    ownerName: "Tom Delgado",
+    coverColor: "#D4692F",
+  },
+  {
+    id: "6",
+    title: "Campbell Biology",
+    author: "Urry, Cain, Wasserman",
+    isbn: "9780134093413",
+    category: "Textbook",
+    condition: "Worn",
+    price: 15,
+    status: "Returned",
+    description: "Well-loved copy, cover is taped but all pages intact and legible.",
+    campusLocation: "Library — Main Entrance",
+    ownerName: "Jordan Lee",
+    coverColor: "#2D6A4F",
+  },
+  {
+    id: "7",
+    title: "Scientific Calculator (Casio fx-115ES)",
+    category: "Calculator",
+    condition: "New",
+    price: 7,
+    status: "Available",
+    description: "Barely used, still has the protective film on the screen.",
+    campusLocation: "Student Union",
+    ownerName: "Jordan Lee",
+    coverColor: "#1B4332",
+  },
+  {
+    id: "8",
+    title: "Safety Goggles (Pack of 2)",
+    category: "Lab Equipment",
+    condition: "Good",
+    price: 4,
+    status: "Available",
+    description: "Anti-fog, adjustable strap. Sanitized between rentals.",
+    campusLocation: "Chemistry Building",
+    ownerName: "Aisha Rahman",
+    coverColor: "#A9BFA0",
+  },
+];
+
+export const rentalHistory: RentalRecord[] = [
+  { id: "r1", itemId: "2", renterName: "Jordan Lee", status: "Requested", requestedAt: "2026-09-02" },
+  { id: "r2", itemId: "4", renterName: "Sam Ortiz", status: "Rented", requestedAt: "2026-08-28" },
+  { id: "r3", itemId: "6", renterName: "Priya Nair", status: "Returned", requestedAt: "2026-08-15" },
+];
+
+export function getItemById(id: string): Item | undefined {
+  return items.find((item) => item.id === id);
+}
