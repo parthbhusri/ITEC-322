@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useToast } from "@/components/ToastProvider";
 
 export default function CheckoutForm() {
   const [submitted, setSubmitted] = useState(false);
+  const showToast = useToast();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitted(true);
+    showToast("Request sent!");
   }
 
   if (submitted) {

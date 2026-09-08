@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import StampBadge from "@/components/StampBadge";
+import { useToast } from "@/components/ToastProvider";
 import { CATEGORY_ICONS, type ItemCategory, type ItemCondition } from "@/lib/types";
 
 const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
@@ -22,6 +23,7 @@ export default function ListItemPage() {
   const [campusLocation, setCampusLocation] = useState("");
   const [description, setDescription] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const showToast = useToast();
 
   function handleLookup() {
     const match = MOCK_ISBN_LOOKUP[isbn.trim()];
@@ -34,6 +36,7 @@ export default function ListItemPage() {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitted(true);
+    showToast("Listing created!");
   }
 
   if (submitted) {
