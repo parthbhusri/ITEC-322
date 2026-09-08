@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import StampBadge from "@/components/StampBadge";
 import { useToast } from "@/components/ToastProvider";
+import ConfettiBurst from "@/components/ConfettiBurst";
 import { CATEGORY_ICONS, type ItemCategory, type ItemCondition } from "@/lib/types";
 
 const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
@@ -41,7 +42,8 @@ export default function ListItemPage() {
 
   if (submitted) {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+      <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+        <ConfettiBurst />
         <p className="font-serif text-xl font-semibold text-forest">Listing created!</p>
         <p className="text-sm text-forest/70">
           &quot;{title || "Your item"}&quot; is now visible to other students browsing the hub.

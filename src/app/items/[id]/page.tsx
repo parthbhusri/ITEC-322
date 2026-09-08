@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getItemById } from "@/lib/mock-data";
 import StampBadge from "@/components/StampBadge";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export default async function ItemDetailPage({
   params,
@@ -27,9 +28,15 @@ export default async function ItemDetailPage({
         </div>
 
         <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="font-serif text-2xl font-semibold text-forest">{item.title}</h1>
-            {item.author && <p className="text-forest/70">{item.author}</p>}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="font-serif text-2xl font-semibold text-forest">{item.title}</h1>
+              {item.author && <p className="text-forest/70">{item.author}</p>}
+            </div>
+            <FavoriteButton
+              itemId={item.id}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sage-dark bg-white text-xl shadow-sm transition-transform duration-150 hover:scale-110"
+            />
           </div>
 
           <StampBadge status={item.status} />

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useToast } from "@/components/ToastProvider";
+import ConfettiBurst from "@/components/ConfettiBurst";
 
 export default function CheckoutForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -15,7 +16,8 @@ export default function CheckoutForm() {
 
   if (submitted) {
     return (
-      <div className="rounded-lg border border-dashed border-forest bg-sage p-6 text-center">
+      <div className="relative rounded-lg border border-dashed border-forest bg-sage p-6 text-center">
+        <ConfettiBurst />
         <p className="font-medium text-forest">Request sent!</p>
         <p className="mt-1 text-sm text-forest/70">
           The owner will confirm your rental request shortly.
