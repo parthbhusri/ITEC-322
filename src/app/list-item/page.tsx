@@ -6,7 +6,7 @@ import type { ItemCategory, ItemCondition } from "@/lib/types";
 
 const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
 const conditions: ItemCondition[] = ["New", "Good", "Fair", "Worn"];
-const coverColors = ["#1B4332", "#2D6A4F", "#B4471F", "#A9BFA0"];
+const coverColors = ["#FF2D78", "#00E5FF", "#39FF14", "#B026FF"];
 
 const MOCK_ISBN_LOOKUP: Record<string, { title: string; author: string }> = {
   "9780262046305": { title: "Introduction to Algorithms", author: "Cormen, Leiserson, Rivest, Stein" },
