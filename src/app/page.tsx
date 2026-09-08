@@ -49,7 +49,7 @@ export default function BrowsePage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className="border-b border-sage-dark bg-sage/60">
+      <section className="border-b border-sage-dark bg-gradient-to-br from-forest/5 via-white to-ink/5">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-12 text-center sm:text-left">
           <h1 className="font-serif text-3xl font-semibold text-forest sm:text-4xl">
             Rent what you need, straight from your classmates.
@@ -61,7 +61,7 @@ export default function BrowsePage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href="/list-item"
-              className="rounded-md bg-forest px-5 py-2.5 text-center text-sm font-semibold text-paper hover:bg-forest-light"
+              className="rounded-md bg-forest px-5 py-2.5 text-center text-sm font-semibold text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-lg"
             >
               List an item
             </a>
@@ -102,8 +102,8 @@ export default function BrowsePage() {
                     onClick={() => toggleCategory(category)}
                     className={
                       isActive
-                        ? "rounded-full border border-forest bg-forest px-3 py-1.5 text-left text-sm font-medium text-paper md:rounded-md"
-                        : "rounded-full border border-sage-dark bg-white px-3 py-1.5 text-left text-sm font-medium text-forest/80 hover:border-forest md:rounded-md"
+                        ? "rounded-full border border-forest bg-forest px-3 py-1.5 text-left text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 md:rounded-md"
+                        : "rounded-full border border-sage-dark bg-white px-3 py-1.5 text-left text-sm font-medium text-forest/80 transition-transform duration-150 hover:scale-105 hover:border-forest hover:shadow-sm md:rounded-md"
                     }
                   >
                     {category}

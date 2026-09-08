@@ -71,7 +71,7 @@ export default function ListItemPage() {
             <button
               type="button"
               onClick={handleLookup}
-              className="rounded-md border border-forest px-3 py-2 text-sm font-medium text-forest hover:bg-sage"
+              className="rounded-md border border-forest px-3 py-2 text-sm font-medium text-forest transition-transform duration-150 hover:scale-105 hover:bg-sage"
             >
               Look up
             </button>
@@ -193,7 +193,7 @@ export default function ListItemPage() {
 
         <button
           type="submit"
-          className="mt-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper hover:bg-forest-light"
+          className="mt-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md"
         >
           Create Listing
         </button>
@@ -201,12 +201,14 @@ export default function ListItemPage() {
 
       <aside className="w-full shrink-0 md:w-64">
         <p className="mb-2 text-xs uppercase tracking-wide text-forest/50">Live Preview</p>
-        <div className="flex flex-col overflow-hidden rounded-lg border border-sage-dark bg-sage">
+        <div className="flex flex-col overflow-hidden rounded-lg border border-sage-dark bg-white shadow-sm">
           <div
-            className="flex h-32 items-center justify-center text-3xl font-serif font-semibold text-paper"
+            className="relative flex aspect-[3/4] items-center justify-center overflow-hidden text-3xl font-serif font-semibold text-paper"
             style={{ backgroundColor: coverColor }}
           >
-            {(title || "?").charAt(0).toUpperCase()}
+            <div className="absolute inset-y-0 left-0 w-2 bg-black/15" aria-hidden />
+            <span className="drop-shadow-sm">{(title || "?").charAt(0).toUpperCase()}</span>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
           </div>
           <div className="flex flex-col gap-2 p-4">
             <h3 className="font-semibold text-forest">{title || "Untitled item"}</h3>

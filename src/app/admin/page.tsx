@@ -22,7 +22,7 @@ export default function AdminPage() {
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="rounded-lg border border-sage-dark bg-sage p-4 text-center"
+            className="rounded-lg border border-sage-dark bg-white p-4 text-center shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
           >
             <p className="font-serif text-3xl font-semibold text-forest">{metric.value}</p>
             <p className="mt-1 text-xs uppercase tracking-wide text-forest/60">

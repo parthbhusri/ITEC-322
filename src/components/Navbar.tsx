@@ -38,7 +38,7 @@ export default function Navbar() {
           })}
           <Link
             href="/login"
-            className="rounded-md bg-forest px-4 py-2 text-paper hover:bg-forest-light"
+            className="rounded-md bg-forest px-4 py-2 text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md"
           >
             Log In
           </Link>

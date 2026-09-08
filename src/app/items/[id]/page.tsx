@@ -21,10 +21,12 @@ export default async function ItemDetailPage({
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div
-          className="flex h-72 items-center justify-center rounded-lg text-6xl font-serif font-semibold text-paper"
+          className="relative mx-auto flex aspect-[3/4] w-full max-w-xs items-center justify-center overflow-hidden rounded-lg text-6xl font-serif font-semibold text-paper shadow-lg"
           style={{ backgroundColor: item.coverColor }}
         >
-          {item.title.charAt(0)}
+          <div className="absolute inset-y-0 left-0 w-3 bg-black/15" aria-hidden />
+          <span className="drop-shadow-sm">{item.title.charAt(0)}</span>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -66,7 +68,7 @@ export default async function ItemDetailPage({
       <div className="sticky bottom-4 mt-10 flex justify-center">
         <Link
           href={`/checkout/${item.id}`}
-          className="rounded-full bg-forest px-8 py-3 font-medium text-paper shadow-lg hover:bg-forest-light"
+          className="rounded-full bg-forest px-8 py-3 font-medium text-paper shadow-lg transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-xl"
         >
           Request to Rent
         </Link>
