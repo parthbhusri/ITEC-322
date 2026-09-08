@@ -32,7 +32,7 @@ export default function MyRentalsPage() {
               : "text-forest/50 hover:text-forest"
           }`}
         >
-          My Rentals
+          My Rentals ({myRentals.length})
         </button>
         <button
           onClick={() => setTab("listings")}
@@ -42,7 +42,7 @@ export default function MyRentalsPage() {
               : "text-forest/50 hover:text-forest"
           }`}
         >
-          My Listings
+          My Listings ({myListings.length})
         </button>
       </div>
 

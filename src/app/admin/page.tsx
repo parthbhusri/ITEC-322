@@ -8,10 +8,10 @@ export default function AdminPage() {
   const totalListings = items.length;
 
   const metrics = [
-    { label: "Active Listings", value: activeListings },
-    { label: "Active Rentals", value: activeRentals },
-    { label: "Pending Requests", value: pendingRequests },
-    { label: "Total Listings", value: totalListings },
+    { label: "Active Listings", value: activeListings, icon: "📦" },
+    { label: "Active Rentals", value: activeRentals, icon: "🔄" },
+    { label: "Pending Requests", value: pendingRequests, icon: "⏳" },
+    { label: "Total Listings", value: totalListings, icon: "📊" },
   ];
 
   return (
@@ -24,7 +24,8 @@ export default function AdminPage() {
             key={metric.label}
             className="rounded-lg border border-sage-dark bg-white p-4 text-center shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
           >
-            <p className="font-serif text-3xl font-semibold text-forest">{metric.value}</p>
+            <span className="text-2xl">{metric.icon}</span>
+            <p className="mt-1 font-serif text-3xl font-semibold text-forest">{metric.value}</p>
             <p className="mt-1 text-xs uppercase tracking-wide text-forest/60">
               {metric.label}
             </p>
