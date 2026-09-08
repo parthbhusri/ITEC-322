@@ -16,7 +16,6 @@ export const items: Item[] = [
       "Classic CLRS algorithms text. Some highlighting in chapters 1-6, otherwise clean.",
     campusLocation: "Library — Main Entrance",
     ownerName: "Priya Nair",
-    coverColor: "#FF2D78",
     coverIcon: "📘",
   },
   {
@@ -32,7 +31,6 @@ export const items: Item[] = [
       "Loose-leaf edition, binder not included. Some water damage on back cover only.",
     campusLocation: "Science Building Lobby",
     ownerName: "Marcus Webb",
-    coverColor: "#FF5F1F",
     coverIcon: "🧪",
   },
   {
@@ -45,7 +43,6 @@ export const items: Item[] = [
     description: "Works perfectly, includes charging cable. Minor scuffs on the back.",
     campusLocation: "Student Union",
     ownerName: "Priya Nair",
-    coverColor: "#00E5FF",
     coverIcon: "🧮",
   },
   {
@@ -58,7 +55,6 @@ export const items: Item[] = [
     description: "White cotton-blend lab coat, freshly laundered, one owner.",
     campusLocation: "Chemistry Building",
     ownerName: "Aisha Rahman",
-    coverColor: "#39FF14",
     coverIcon: "🥼",
   },
   {
@@ -71,7 +67,6 @@ export const items: Item[] = [
     description: "Basic multimeter for circuits lab. Probes included, battery not.",
     campusLocation: "Engineering Annex",
     ownerName: "Tom Delgado",
-    coverColor: "#B026FF",
     coverIcon: "🔌",
   },
   {
@@ -86,7 +81,6 @@ export const items: Item[] = [
     description: "Well-loved copy, cover is taped but all pages intact and legible.",
     campusLocation: "Library — Main Entrance",
     ownerName: "Jordan Lee",
-    coverColor: "#FF3131",
     coverIcon: "🧬",
   },
   {
@@ -99,7 +93,6 @@ export const items: Item[] = [
     description: "Barely used, still has the protective film on the screen.",
     campusLocation: "Student Union",
     ownerName: "Jordan Lee",
-    coverColor: "#1F51FF",
     coverIcon: "🧮",
   },
   {
@@ -112,7 +105,6 @@ export const items: Item[] = [
     description: "Anti-fog, adjustable strap. Sanitized between rentals.",
     campusLocation: "Chemistry Building",
     ownerName: "Aisha Rahman",
-    coverColor: "#FF10F0",
     coverIcon: "🥽",
   },
 ];

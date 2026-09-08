@@ -16,7 +16,6 @@ export interface Item {
   description: string;
   campusLocation: string;
   ownerName: string;
-  coverColor: string;
   coverIcon: string;
 }
 

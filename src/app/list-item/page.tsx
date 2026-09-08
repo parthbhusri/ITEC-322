@@ -6,7 +6,6 @@ import { CATEGORY_ICONS, type ItemCategory, type ItemCondition } from "@/lib/typ
 
 const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
 const conditions: ItemCondition[] = ["New", "Good", "Fair", "Worn"];
-const coverColors = ["#FF2D78", "#00E5FF", "#39FF14", "#B026FF"];
 
 const MOCK_ISBN_LOOKUP: Record<string, { title: string; author: string }> = {
   "9780262046305": { title: "Introduction to Algorithms", author: "Cormen, Leiserson, Rivest, Stein" },
@@ -23,8 +22,6 @@ export default function ListItemPage() {
   const [campusLocation, setCampusLocation] = useState("");
   const [description, setDescription] = useState("");
   const [submitted, setSubmitted] = useState(false);
-
-  const coverColor = coverColors[category.length % coverColors.length];
 
   function handleLookup() {
     const match = MOCK_ISBN_LOOKUP[isbn.trim()];
@@ -201,14 +198,11 @@ export default function ListItemPage() {
 
       <aside className="w-full shrink-0 md:w-64">
         <p className="mb-2 text-xs uppercase tracking-wide text-forest/50">Live Preview</p>
-        <div className="flex flex-col overflow-hidden rounded-lg border border-sage-dark bg-white shadow-sm">
-          <div
-            className="relative flex aspect-[3/4] items-center justify-center overflow-hidden"
-            style={{ backgroundColor: coverColor }}
-          >
-            <div className="absolute inset-y-0 left-0 w-2 bg-black/15" aria-hidden />
-            <span className="text-6xl drop-shadow-sm">{CATEGORY_ICONS[category]}</span>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+        <div className="group flex flex-col overflow-hidden rounded-lg border border-sage-dark bg-white shadow-sm">
+          <div className="flex aspect-[3/4] items-center justify-center overflow-hidden border-b border-sage-dark bg-sage">
+            <span className="text-6xl transition-transform duration-300 ease-out group-hover:scale-125">
+              {CATEGORY_ICONS[category]}
+            </span>
           </div>
           <div className="flex flex-col gap-2 p-4">
             <h3 className="font-semibold text-forest">{title || "Untitled item"}</h3>

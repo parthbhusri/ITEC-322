@@ -20,13 +20,10 @@ export default async function ItemDetailPage({
       </Link>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div
-          className="relative mx-auto flex aspect-[3/4] w-full max-w-xs items-center justify-center overflow-hidden rounded-lg shadow-lg"
-          style={{ backgroundColor: item.coverColor }}
-        >
-          <div className="absolute inset-y-0 left-0 w-3 bg-black/15" aria-hidden />
-          <span className="text-8xl drop-shadow-sm">{item.coverIcon}</span>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+        <div className="group mx-auto flex aspect-[3/4] w-full max-w-xs items-center justify-center overflow-hidden rounded-lg border border-sage-dark bg-sage shadow-sm">
+          <span className="text-8xl transition-transform duration-300 ease-out group-hover:scale-125">
+            {item.coverIcon}
+          </span>
         </div>
 
         <div className="flex flex-col gap-4">
