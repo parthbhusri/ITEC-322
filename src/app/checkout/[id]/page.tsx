@@ -22,7 +22,7 @@ export default async function CheckoutPage({
       <aside className="w-full shrink-0 rounded-lg border border-sage-dark bg-sage p-5 md:w-72">
         <h2 className="mb-4 font-serif text-lg font-semibold text-forest">Order Summary</h2>
         <div className="mb-2 flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded border border-sage-dark bg-white text-xl">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center text-3xl">
             {item.coverIcon}
           </div>
           <div>

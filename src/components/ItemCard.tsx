@@ -8,7 +8,7 @@ export default function ItemCard({ item }: { item: Item }) {
       href={`/items/${item.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-sage-dark bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-forest/40 hover:shadow-xl"
     >
-      <div className="flex aspect-[3/4] items-center justify-center overflow-hidden border-b border-sage-dark bg-sage">
+      <div className="flex aspect-[3/4] items-center justify-center">
         <span className="text-6xl transition-transform duration-300 ease-out group-hover:scale-125">
           {item.coverIcon}
         </span>

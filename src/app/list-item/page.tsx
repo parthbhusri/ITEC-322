@@ -199,7 +199,7 @@ export default function ListItemPage() {
       <aside className="w-full shrink-0 md:w-64">
         <p className="mb-2 text-xs uppercase tracking-wide text-forest/50">Live Preview</p>
         <div className="group flex flex-col overflow-hidden rounded-lg border border-sage-dark bg-white shadow-sm">
-          <div className="flex aspect-[3/4] items-center justify-center overflow-hidden border-b border-sage-dark bg-sage">
+          <div className="flex aspect-[3/4] items-center justify-center">
             <span className="text-6xl transition-transform duration-300 ease-out group-hover:scale-125">
               {CATEGORY_ICONS[category]}
             </span>

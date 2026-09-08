@@ -20,7 +20,7 @@ export default async function ItemDetailPage({
       </Link>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div className="group mx-auto flex aspect-[3/4] w-full max-w-xs items-center justify-center overflow-hidden rounded-lg border border-sage-dark bg-sage shadow-sm">
+        <div className="group mx-auto flex aspect-[3/4] w-full max-w-xs items-center justify-center">
           <span className="text-8xl transition-transform duration-300 ease-out group-hover:scale-125">
             {item.coverIcon}
           </span>
