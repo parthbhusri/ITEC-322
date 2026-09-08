@@ -23,10 +23,10 @@ export default async function CheckoutPage({
         <h2 className="mb-4 font-serif text-lg font-semibold text-forest">Order Summary</h2>
         <div className="mb-2 flex items-center gap-3">
           <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded font-serif font-semibold text-paper"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded text-xl"
             style={{ backgroundColor: item.coverColor }}
           >
-            {item.title.charAt(0)}
+            {item.coverIcon}
           </div>
           <div>
             <p className="text-sm font-medium text-forest">{item.title}</p>

@@ -16,8 +16,8 @@ export default function ItemCard({ item }: { item: Item }) {
           className="absolute inset-y-0 left-0 w-2 bg-black/15"
           aria-hidden
         />
-        <span className="font-serif text-5xl font-semibold text-paper drop-shadow-sm transition-transform duration-300 group-hover:scale-110">
-          {item.title.charAt(0)}
+        <span className="text-6xl drop-shadow-sm transition-transform duration-300 group-hover:scale-110">
+          {item.coverIcon}
         </span>
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
       </div>

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import StampBadge from "@/components/StampBadge";
-import type { ItemCategory, ItemCondition } from "@/lib/types";
+import { CATEGORY_ICONS, type ItemCategory, type ItemCondition } from "@/lib/types";
 
 const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
 const conditions: ItemCondition[] = ["New", "Good", "Fair", "Worn"];
@@ -203,11 +203,11 @@ export default function ListItemPage() {
         <p className="mb-2 text-xs uppercase tracking-wide text-forest/50">Live Preview</p>
         <div className="flex flex-col overflow-hidden rounded-lg border border-sage-dark bg-white shadow-sm">
           <div
-            className="relative flex aspect-[3/4] items-center justify-center overflow-hidden text-3xl font-serif font-semibold text-paper"
+            className="relative flex aspect-[3/4] items-center justify-center overflow-hidden"
             style={{ backgroundColor: coverColor }}
           >
             <div className="absolute inset-y-0 left-0 w-2 bg-black/15" aria-hidden />
-            <span className="drop-shadow-sm">{(title || "?").charAt(0).toUpperCase()}</span>
+            <span className="text-6xl drop-shadow-sm">{CATEGORY_ICONS[category]}</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
           </div>
           <div className="flex flex-col gap-2 p-4">

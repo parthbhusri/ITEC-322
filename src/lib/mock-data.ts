@@ -17,6 +17,7 @@ export const items: Item[] = [
     campusLocation: "Library — Main Entrance",
     ownerName: "Priya Nair",
     coverColor: "#FF2D78",
+    coverIcon: "📘",
   },
   {
     id: "2",
@@ -32,6 +33,7 @@ export const items: Item[] = [
     campusLocation: "Science Building Lobby",
     ownerName: "Marcus Webb",
     coverColor: "#FF5F1F",
+    coverIcon: "🧪",
   },
   {
     id: "3",
@@ -44,6 +46,7 @@ export const items: Item[] = [
     campusLocation: "Student Union",
     ownerName: "Priya Nair",
     coverColor: "#00E5FF",
+    coverIcon: "🧮",
   },
   {
     id: "4",
@@ -56,6 +59,7 @@ export const items: Item[] = [
     campusLocation: "Chemistry Building",
     ownerName: "Aisha Rahman",
     coverColor: "#39FF14",
+    coverIcon: "🥼",
   },
   {
     id: "5",
@@ -68,6 +72,7 @@ export const items: Item[] = [
     campusLocation: "Engineering Annex",
     ownerName: "Tom Delgado",
     coverColor: "#B026FF",
+    coverIcon: "🔌",
   },
   {
     id: "6",
@@ -82,6 +87,7 @@ export const items: Item[] = [
     campusLocation: "Library — Main Entrance",
     ownerName: "Jordan Lee",
     coverColor: "#FF3131",
+    coverIcon: "🧬",
   },
   {
     id: "7",
@@ -94,6 +100,7 @@ export const items: Item[] = [
     campusLocation: "Student Union",
     ownerName: "Jordan Lee",
     coverColor: "#1F51FF",
+    coverIcon: "🧮",
   },
   {
     id: "8",
@@ -106,6 +113,7 @@ export const items: Item[] = [
     campusLocation: "Chemistry Building",
     ownerName: "Aisha Rahman",
     coverColor: "#FF10F0",
+    coverIcon: "🥽",
   },
 ];
 

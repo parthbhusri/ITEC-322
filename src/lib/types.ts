@@ -17,7 +17,15 @@ export interface Item {
   campusLocation: string;
   ownerName: string;
   coverColor: string;
+  coverIcon: string;
 }
+
+export const CATEGORY_ICONS: Record<ItemCategory, string> = {
+  Textbook: "📚",
+  "Lab Equipment": "🥼",
+  Calculator: "🧮",
+  Tool: "🔧",
+};
 
 export interface RentalRecord {
   id: string;
