@@ -145,6 +145,13 @@ class Item(Base):
         nullable=True,
     )
 
+    owner = relationship("User")
+
+    # Read-only helper for API responses (no database column)
+    @property
+    def owner_name(self):
+        return self.owner.full_name if self.owner else None
+
 
 # ==========================================
 # RENTAL MODEL
@@ -229,4 +236,25 @@ class Rental(Base):
     item = relationship("Item")
 
     renter = relationship("User")
+
+    # Read-only helpers for API responses (no database columns)
+    @property
+    def item_title(self):
+        return self.item.title if self.item else None
+
+    @property
+    def item_category(self):
+        return self.item.category if self.item else None
+
+    @property
+    def item_image_url(self):
+        return self.item.image_url if self.item else None
+
+    @property
+    def owner_name(self):
+        return self.item.owner_name if self.item else None
+
+    @property
+    def renter_name(self):
+        return self.renter.full_name if self.renter else None
 

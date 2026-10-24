@@ -1,5 +1,5 @@
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import (
@@ -93,6 +93,9 @@ class ItemResponse(BaseModel):
 
     # NEW: Image URL returned to frontend
     image_url: str | None = None
+
+    # Name of the student who listed the item
+    owner_name: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True
@@ -215,6 +218,14 @@ class RentalResponse(BaseModel):
     payment_status: str = "Unpaid"
 
     handoff_location: str | None = None
+
+    # Extra details so the frontend can show a rental without extra requests
+    created_at: datetime | None = None
+    item_title: str | None = None
+    item_category: str | None = None
+    item_image_url: str | None = None
+    owner_name: str | None = None
+    renter_name: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True

@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.database import SessionLocal
 from app.models import User, Item
+from app.security import hash_password
 
 # Product name, category, suggested daily price (AUD)
 PRODUCTS = [
@@ -54,7 +55,20 @@ PRODUCTS = [
     ("Noise-Cancelling Headphones", "Electronics", 6),
 ]
 
-DEMO_EMAIL = "demo-catalogue@campusrentalhub.invalid"
+# Demo owner account. You can log in as this user to approve, start and
+# complete rental requests made on the sample items.
+DEMO_EMAIL = "demo.owner@example.com"
+DEMO_PASSWORD = "DemoOwner123!"
+
+# Email used by an earlier version of this script (login was disabled).
+OLD_DEMO_EMAIL = "demo-catalogue@campusrentalhub.invalid"
+
+PICKUP_SPOTS = [
+    "Library - Main Entrance",
+    "Student Union",
+    "Science Building Lobby",
+    "Engineering Annex",
+]
 
 
 def main():
@@ -62,56 +76,76 @@ def main():
 
     try:
         owner = db.scalar(
-            select(User).where(User.email == DEMO_EMAIL)
+            select(User).where(User.email.in_([DEMO_EMAIL, OLD_DEMO_EMAIL]))
         )
 
         if owner is None:
             owner = User(
-                full_name="Campus Rental Hub Demo Catalogue",
+                full_name="Demo Owner",
                 email=DEMO_EMAIL,
-                password_hash="!demo-account-login-disabled",
+                password_hash=hash_password(DEMO_PASSWORD),
                 is_verified=False,
                 role="student",
             )
             db.add(owner)
-            db.flush()
 
-        existing_titles = {
-            title.casefold()
-            for title in db.scalars(
-                select(Item.title).where(Item.owner_id == owner.id)
+        # Make sure the demo owner can log in and list items
+        owner.full_name = "Demo Owner"
+        owner.email = DEMO_EMAIL
+        owner.password_hash = hash_password(DEMO_PASSWORD)
+        owner.university = owner.university or "Australian Catholic University"
+        owner.campus = owner.campus or "North Sydney"
+        db.flush()
+
+        existing = {
+            item.title.casefold(): item
+            for item in db.scalars(
+                select(Item).where(Item.owner_id == owner.id)
             ).all()
         }
 
         added = 0
+        updated = 0
 
-        for title, category, price in PRODUCTS:
-            if title.casefold() in existing_titles:
+        for index, (title, category, price) in enumerate(PRODUCTS):
+            item = existing.get(title.casefold())
+
+            if item is not None:
+                # Older seeds used status "Demo", which cannot be rented
+                if item.status == "Demo":
+                    item.status = "Available"
+                    item.university = owner.university
+                    item.campus = owner.campus
+                    item.pickup_location = PICKUP_SPOTS[index % len(PICKUP_SPOTS)]
+                    item.description = (
+                        f"Sample listing: {title.lower()} for testing the rental flow."
+                    )
+                    updated += 1
                 continue
 
-            item = Item(
-                owner_id=owner.id,
-                title=title,
-                description=(
-                    f"DEMO LISTING ONLY. Example {title.lower()} "
-                    "for university students across Australia. "
-                    "Suggested daily price, not a confirmed rental offer."
-                ),
-                category=category,
-                condition="Good",
-                price_per_day=Decimal(str(price)),
-                status="Demo",
-                isbn=None,
+            db.add(
+                Item(
+                    owner_id=owner.id,
+                    title=title,
+                    description=(
+                        f"Sample listing: {title.lower()} for testing the rental flow."
+                    ),
+                    category=category,
+                    condition="Good",
+                    price_per_day=Decimal(str(price)),
+                    status="Available",
+                    isbn=None,
+                    university=owner.university,
+                    campus=owner.campus,
+                    pickup_location=PICKUP_SPOTS[index % len(PICKUP_SPOTS)],
+                )
             )
-
-            db.add(item)
-            existing_titles.add(title.casefold())
             added += 1
 
         db.commit()
 
-        print(f"Successfully added {added} demo products.")
-        print(f"Demo catalogue contains {len(existing_titles)} products.")
+        print(f"Added {added} sample products, updated {updated}.")
+        print(f"Demo owner login: {DEMO_EMAIL} / {DEMO_PASSWORD}")
 
     except Exception:
         db.rollback()

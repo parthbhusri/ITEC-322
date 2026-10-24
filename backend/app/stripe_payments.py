@@ -355,3 +355,94 @@ async def stripe_webhook(
             ) from error
 
     return {"received": True}
+
+
+# ==================================================
+# PAYMENT CONFIG (lets the frontend know if Stripe is set up)
+# ==================================================
+
+@router.get("/config")
+def payment_config():
+    return {
+        "enabled": STRIPE_SECRET_KEY.startswith("sk_test_"),
+    }
+
+
+# ==================================================
+# VERIFY PAYMENT AFTER REDIRECT
+# --------------------------------------------------
+# The webhook needs the Stripe CLI to reach a laptop.
+# This endpoint lets the frontend confirm the payment
+# directly with Stripe when the student comes back
+# from Checkout, so local demos work without it.
+# ==================================================
+
+@router.post("/verify/{rental_id}")
+def verify_payment(
+    rental_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not STRIPE_SECRET_KEY.startswith("sk_test_"):
+        raise HTTPException(
+            status_code=500,
+            detail="Stripe test secret key is not configured.",
+        )
+
+    rental = db.scalar(
+        select(Rental).where(
+            Rental.id == rental_id,
+            Rental.renter_id == current_user.id,
+        )
+    )
+
+    if rental is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Rental booking not found.",
+        )
+
+    if rental.payment_status == "Paid":
+        return {"payment_status": "Paid"}
+
+    if not rental.stripe_checkout_session_id:
+        raise HTTPException(
+            status_code=400,
+            detail="No checkout has been started for this rental.",
+        )
+
+    try:
+        checkout_session = stripe.checkout.Session.retrieve(
+            rental.stripe_checkout_session_id
+        )
+    except stripe.StripeError as error:
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to check payment with Stripe.",
+        ) from error
+
+    paid = (
+        checkout_session.get("payment_status") == "paid"
+        and checkout_session.get("currency") == "aud"
+        and checkout_session.get("amount_total")
+        == to_cents(rental.total_price)
+    )
+
+    if not paid:
+        return {"payment_status": rental.payment_status}
+
+    try:
+        rental.payment_status = "Paid"
+        rental.stripe_payment_intent_id = checkout_session.get(
+            "payment_intent"
+        )
+        rental.paid_at = datetime.now(timezone.utc)
+        db.commit()
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to save payment result.",
+        ) from error
+
+    return {"payment_status": "Paid"}
