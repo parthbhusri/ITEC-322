@@ -2,7 +2,7 @@
 from decimal import Decimal
 from sqlalchemy import select
 
-from app.database import SessionLocal
+from app.database import Base, SessionLocal, engine
 from app.models import User, Item
 from app.security import hash_password
 
@@ -72,6 +72,10 @@ PICKUP_SPOTS = [
 
 
 def main():
+    # Create the tables if this is a brand-new database
+    # (the API also does this when it starts)
+    Base.metadata.create_all(bind=engine)
+
     db = SessionLocal()
 
     try:
