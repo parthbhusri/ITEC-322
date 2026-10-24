@@ -72,21 +72,27 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Configure a local PostgreSQL database and create a `.env` file containing the required database connection, JWT configuration, and Stripe test credentials.
+Configure a local PostgreSQL database, then copy `.env.example` to `.env` and fill in the database connection, JWT secret and (optionally) Stripe test credentials.
+
+Load the sample items and demo owner account (`demo.owner@example.com` / `DemoOwner123!`):
+
+```powershell
+python seed_products.py
+```
 
 **Never commit `.env` or secret keys to GitHub.**
 
 Start the backend:
 
 ```powershell
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## API Documentation
 
 Once the backend is running, visit:
 
-http://127.0.0.1:8001/docs
+http://127.0.0.1:8000/docs
 
 This provides interactive Swagger UI documentation for testing the available endpoints.
 
@@ -106,11 +112,12 @@ Stripe Checkout is integrated in sandbox mode for testing rental payments.
 
 The backend includes a webhook endpoint for processing successful Checkout sessions. Automatic webhook delivery and payment reconciliation require correct Stripe webhook configuration and end-to-end testing.
 
-## Frontend Repository
+## Frontend
 
-The Next.js frontend is maintained separately:
-
-https://github.com/ArshdeepKaur012003/campus-rental-hub-frontend
+This backend now lives in the `backend/` folder of the main ITEC-322 repository,
+next to the Next.js frontend in `src/` (which expects the API on port 8000).
+It was originally developed at
+https://github.com/ArshdeepKaur012003/campus-rental-hub-backend.
 
 ## Project Status
 

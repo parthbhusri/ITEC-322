@@ -1,24 +1,48 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import AuthSidePanel from "@/components/AuthSidePanel";
+import { useToast } from "@/components/ToastProvider";
+import { useAuth } from "@/lib/auth";
+
+/** Only allow redirects back to pages on this site. */
+function nextPath(): string {
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({});
+  const [submitting, setSubmitting] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
+  const showToast = useToast();
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const nextErrors: { email?: string; password?: string } = {};
-    if (!email.endsWith(".edu")) {
-      nextErrors.email = "Please use your student email address (.edu)";
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      nextErrors.email = "Enter your email address";
     }
-    if (password.length < 8) {
-      nextErrors.password = "Password must be at least 8 characters";
+    if (!password) {
+      nextErrors.password = "Enter your password";
     }
     setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setSubmitting(true);
+    try {
+      const user = await login(email.trim(), password);
+      showToast(`Welcome back, ${user.full_name.split(" ")[0]}!`);
+      router.push(nextPath());
+    } catch (err) {
+      setErrors({ form: err instanceof Error ? err.message : "Login failed" });
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -42,7 +66,8 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@university.edu"
+                placeholder="you@university.edu.au"
+                autoComplete="email"
                 className="w-full rounded-md border border-sage-dark bg-white px-3 py-2 text-sm text-forest placeholder:text-forest/40 focus:border-forest focus:outline-none"
               />
               {errors.email && <p className="mt-1 text-xs text-ink">{errors.email}</p>}
@@ -55,6 +80,7 @@ export default function LoginPage() {
               <input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-md border border-sage-dark bg-white px-3 py-2 text-sm text-forest focus:border-forest focus:outline-none"
@@ -62,11 +88,18 @@ export default function LoginPage() {
               {errors.password && <p className="mt-1 text-xs text-ink">{errors.password}</p>}
             </div>
 
+            {errors.form && (
+              <p className="rounded-md border border-ink/40 bg-ink/5 px-3 py-2 text-sm text-ink">
+                {errors.form}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md"
+              disabled={submitting}
+              className="mt-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md disabled:cursor-wait disabled:opacity-60 disabled:hover:scale-100"
             >
-              Log In
+              {submitting ? "Logging in…" : "Log In"}
             </button>
           </form>
 

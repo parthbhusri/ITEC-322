@@ -1,92 +1,113 @@
 # Campus Rental Hub
 
 A peer-to-peer rental marketplace for students — textbooks, calculators, lab
-equipment, and tools, borrowed and returned right on campus. This repo
-currently contains the **frontend only**, built with Next.js and Tailwind
-CSS.
+equipment, and tools, borrowed and returned right on campus.
 
-## Tech stack
+This repo holds the whole app:
 
-- [Next.js](https://nextjs.org) (App Router) + TypeScript
-- [Tailwind CSS](https://tailwindcss.com) v4
-- No backend, database, or external services yet — see [What's left](#whats-left-for-a-live-site) below
+| Part | Folder | Built with |
+|---|---|---|
+| Frontend | `src/` | Next.js (App Router) + TypeScript + Tailwind CSS v4 |
+| Backend API | `backend/` | FastAPI + PostgreSQL + SQLAlchemy + Stripe Checkout (by Arshdeep Kaur) |
 
-## Getting started
+## Running it locally
+
+You need **Node.js 20+**, **Python 3.11+** and **PostgreSQL** (installed locally, or a
+free hosted database such as Neon or Supabase).
+
+### 1. Backend (terminal 1)
+
+```bash
+cd backend
+python -m venv .venv
+# Windows:  .venv\Scripts\activate      macOS/Linux:  source .venv/bin/activate
+pip install -r requirements.txt
+
+cp .env.example .env          # Windows: copy .env.example .env
+# then edit .env: set DATABASE_URL and JWT_SECRET_KEY (Stripe keys are optional)
+
+python seed_products.py       # adds 40 sample items + a demo owner account
+python -m uvicorn app.main:app --port 8000
+```
+
+The tables are created automatically the first time the API starts.
+API docs (Swagger): <http://localhost:8000/docs>
+
+### 2. Frontend (terminal 2)
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open <http://localhost:3000>. The frontend talks to `http://localhost:8000` by
+default; to use a different address, copy `.env.example` to `.env.local` and change
+`NEXT_PUBLIC_API_URL`.
 
-## What's built (frontend)
+### Demo accounts
 
-Every screen below is fully designed and interactive, but runs on
-**mock/local data only** (see [`src/lib/mock-data.ts`](src/lib/mock-data.ts))
-— nothing is saved to a real server.
+- **Demo Owner** (owns the 40 sample items): `demo.owner@example.com` / `DemoOwner123!`
+  Log in as this account to approve, hand over and complete rentals of sample items.
+- **Students**: register with any email ending in `.edu` or `.edu.au`.
+
+### Payments (optional)
+
+Put a Stripe **test** secret key (`sk_test_...`) in `backend/.env` as
+`STRIPE_SECRET_KEY` and restart the backend. "Pay" buttons then appear on approved
+rentals and open Stripe Checkout; use card `4242 4242 4242 4242`, any future expiry
+and any CVC. When the student returns, the app confirms the payment with Stripe, so
+the Stripe CLI webhook is not required for local testing. Without a key, everything
+except paying works.
+
+## How a rental works
+
+1. A student registers (university + campus are saved to their profile) and logs in.
+2. They browse items, open one and choose **Request to Rent** with start/end dates.
+   The total is `price per day × number of days` (both dates included).
+3. The owner sees it under **My Rentals → Requests** and approves or rejects it.
+   Overlapping bookings for the same item are blocked by the backend.
+4. Once approved, the renter pays from **My Rentals** (Stripe Checkout, test mode).
+5. The owner marks the item **handed over**, then **returned** when it comes back.
+6. A renter can cancel a request while it's still waiting for approval.
+
+## Pages
 
 | Page | Route | What it does |
 |---|---|---|
-| Browse | `/` | Search, filter by category/availability, sort by price, hero section |
-| Item detail | `/items/[id]` | Full item info, condition/price/category, "Request to Rent" |
-| List an item | `/list-item` | Form with live preview and a mock ISBN auto-fill lookup |
-| Checkout | `/checkout/[id]` | Order summary + a mock payment form (no real charge) |
-| My Rentals | `/my-rentals` | Tabs for rentals, listings, and saved/favorited items |
-| Admin dashboard | `/admin` | Metric cards + a recent activity table |
-| Log in / Register | `/login`, `/register` | Forms with client-side validation only (no real auth) |
+| Browse | `/` | Live items from the API; search, category filter, "available only", sort by price |
+| Item detail | `/items/[id]` | Item info and photo; owners can add/change the photo |
+| List an item | `/list-item` | Create a listing with optional photo; ISBN lookup via Open Library |
+| Request to rent | `/checkout/[id]` | Pick dates and hand-off spot, see the total, send the request |
+| My Account | `/my-rentals` | Tabs: my rentals (cancel/pay), requests on my items (approve/reject/hand over/return), my listings, saved |
+| Admin | `/admin` | Listing stats and latest listings from the API |
+| Log in / Register | `/login`, `/register` | Real accounts with JWT login (expires after 30 minutes) |
 
-**Design system / UI features:**
-- Library card-catalog theme: forest green + rust accent on a white/paper background, serif wordmark, monospace "stamp" badges for rental status (Available / Requested / Rented / Returned)
-- Item-specific emoji icons instead of photos (no image hosting needed yet)
-- Responsive layout with a collapsible mobile nav (hamburger menu)
-- Hover animations on cards and buttons, a confetti burst on successful actions, and toast notifications
-- Favorites/wishlist system using `localStorage` (per-browser only, not synced to an account)
+**Design:** library card-catalog theme (forest green + rust on white), serif wordmark,
+rubber-stamp status badges, responsive layout with a mobile menu, hover animations,
+confetti and toast notifications.
 
-## What's left for a live site
+## Known gaps
 
-This is a static-data prototype. To go live, the following still need to be built:
-
-### Backend & data
-- [ ] A real API/server (e.g. Next.js API routes, or a separate backend service)
-- [ ] A database (e.g. Postgres, MySQL, MongoDB) to replace `mock-data.ts` — items, users, rental records
-- [ ] Image upload & storage (e.g. S3, Cloudinary) for real item photos instead of emoji placeholders
-- [ ] A real ISBN lookup integration (e.g. Google Books API or Open Library API) to replace the hardcoded mock lookup in `list-item/page.tsx`
-
-### Authentication & accounts
-- [ ] Real user authentication (e.g. NextAuth.js / Auth.js, Clerk, or a custom JWT/session system)
-- [ ] Student email verification (`.edu` domain check is currently just a client-side string check with no actual verification email sent)
-- [ ] Password hashing & secure storage (currently there is no password storage at all)
-- [ ] Session/auth state shared across the app (the Navbar's "Log In" button doesn't currently reflect whether anyone is logged in)
-
-### Payments
-- [ ] A real payment gateway integration (e.g. Stripe Checkout or Payment Intents) — the checkout form is a static mock UI with no Stripe SDK, no server-side charge, and no webhook handling
-- [ ] Handling for refunds, security deposits, or late fees if the business model needs them
-
-### Core rental logic
-- [ ] Server-side rental state machine (Available → Requested → Rented → Returned) — item statuses are hardcoded in mock data and don't actually change when you click "Request to Rent"
-- [ ] Notifications to the item owner when a rental is requested/confirmed (email, SMS, or in-app)
-- [ ] Real-time or polling updates so listings reflect current availability across users
-
-### Admin & trust/safety
-- [ ] Real admin authentication/role checks (the `/admin` page is currently open to anyone)
-- [ ] Reporting/moderation tools for problematic listings or users
-- [ ] Rate limiting and abuse prevention
-
-### Infrastructure
-- [ ] Deployment (e.g. Vercel, or another host) and environment configuration
-- [ ] Environment variables/secrets management for API keys (Stripe, database, email service, etc.)
-- [ ] Error monitoring/logging (e.g. Sentry)
-- [ ] Automated tests
+- **Admin**: there is no admin-only API yet, so the dashboard shows listing stats only
+  (not rentals across all users) and the page is open to anyone.
+- **Saved items** are stored in the browser (`localStorage`), not on the account.
+- **Email verification**: the `.edu` / `.edu.au` check is client-side only; no
+  verification email is sent.
+- No editing or deleting listings, no notifications to owners, no automated tests yet.
 
 ## Project structure
 
 ```
 src/
-  app/            Pages (App Router)
-  components/     Shared UI components (Navbar, ItemCard, StampBadge, etc.)
+  app/              Pages (App Router)
+  components/       Shared UI (Navbar, ItemCard, ItemImage, StampBadge, PageStatus, ...)
   lib/
-    mock-data.ts  Fake items/users/rental history — replace with real data source
-    types.ts      Shared TypeScript types
-    favorites.ts  localStorage-based favorites (client-only, no backend)
+    api.ts          Typed client for every backend endpoint + login token storage
+    auth.tsx        Login state shared across the app (useAuth)
+    types.ts        UI item type, converters, categories, price/date helpers
+    favorites.ts    Saved items (browser-only)
+backend/
+  app/              FastAPI app: auth, items, rentals, Stripe payments, models
+  seed_products.py  Sample items + demo owner
+  .env.example      Settings the API reads
 ```

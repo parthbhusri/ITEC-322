@@ -1,7 +1,8 @@
 import Link from "next/link";
-import type { Item } from "@/lib/types";
+import { formatPrice, type Item } from "@/lib/types";
 import StampBadge from "./StampBadge";
 import FavoriteButton from "./FavoriteButton";
+import ItemImage from "./ItemImage";
 
 export default function ItemCard({ item }: { item: Item }) {
   return (
@@ -10,22 +11,16 @@ export default function ItemCard({ item }: { item: Item }) {
         itemId={item.id}
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm transition-transform duration-150 hover:scale-110"
       />
-      <Link href={`/items/${item.id}`} className="flex flex-col">
-        <div className="flex aspect-[3/4] items-center justify-center">
-          <span className="text-6xl transition-transform duration-300 ease-out group-hover:scale-125">
-            {item.coverIcon}
-          </span>
-        </div>
+      <Link href={`/items/${item.id}`} className="flex flex-1 flex-col">
+        <ItemImage item={item} iconClassName="text-6xl" />
         <div className="flex flex-1 flex-col gap-2 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold leading-snug text-forest group-hover:underline">
-              {item.title}
-            </h3>
-          </div>
-          {item.author && <p className="text-sm text-forest/70">{item.author}</p>}
-          <div className="mt-1 flex items-center justify-between text-sm">
+          <h3 className="font-semibold leading-snug text-forest group-hover:underline">
+            {item.title}
+          </h3>
+          <p className="text-sm text-forest/60">{item.category}</p>
+          <div className="mt-auto flex items-center justify-between pt-1 text-sm">
             <span className="text-forest/70">{item.condition}</span>
-            <span className="font-semibold text-forest">${item.price}/wk</span>
+            <span className="font-semibold text-forest">{formatPrice(item.price)}/day</span>
           </div>
           <div className="mt-2">
             <StampBadge status={item.status} />

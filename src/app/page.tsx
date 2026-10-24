@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ItemCard from "@/components/ItemCard";
-import { items } from "@/lib/mock-data";
-import type { ItemCategory } from "@/lib/types";
-
-const categories: ItemCategory[] = ["Textbook", "Lab Equipment", "Calculator", "Tool"];
+import { ErrorBox, Loading } from "@/components/PageStatus";
+import { api } from "@/lib/api";
+import { toItem, type Item } from "@/lib/types";
 
 type SortOption = "newest" | "price-asc" | "price-desc";
 
@@ -16,12 +16,34 @@ const sortOptions: { value: SortOption; label: string }[] = [
 ];
 
 export default function BrowsePage() {
+  const [items, setItems] = useState<Item[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [activeCategories, setActiveCategories] = useState<ItemCategory[]>([]);
+  const [activeCategories, setActiveCategories] = useState<string[]>([]);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sort, setSort] = useState<SortOption>("newest");
 
-  function toggleCategory(category: ItemCategory) {
+  const loadItems = useCallback(() => {
+    api
+      .items()
+      .then((data) => {
+        setItems(data.map(toItem));
+        setLoadError(null);
+      })
+      .catch((err: Error) => setLoadError(err.message));
+  }, []);
+
+  useEffect(() => {
+    loadItems();
+  }, [loadItems]);
+
+  // Build the category filter from whatever categories the items use
+  const categories = useMemo(
+    () => [...new Set((items ?? []).map((item) => item.category))].sort(),
+    [items]
+  );
+
+  function toggleCategory(category: string) {
     setActiveCategories((prev) =>
       prev.includes(category)
         ? prev.filter((c) => c !== category)
@@ -30,11 +52,13 @@ export default function BrowsePage() {
   }
 
   const filteredItems = useMemo(() => {
-    const filtered = items.filter((item) => {
+    const q = query.trim().toLowerCase();
+    const filtered = (items ?? []).filter((item) => {
       const matchesQuery =
-        query.trim() === "" ||
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.author?.toLowerCase().includes(query.toLowerCase());
+        q === "" ||
+        item.title.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.isbn?.includes(q);
       const matchesCategory =
         activeCategories.length === 0 || activeCategories.includes(item.category);
       const matchesAvailability = !availableOnly || item.status === "Available";
@@ -45,7 +69,7 @@ export default function BrowsePage() {
     if (sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
     if (sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
     return sorted;
-  }, [query, activeCategories, availableOnly, sort]);
+  }, [items, query, activeCategories, availableOnly, sort]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -59,15 +83,17 @@ export default function BrowsePage() {
             No shipping, no markup, just students helping students.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
+            <Link
               href="/list-item"
               className="rounded-md bg-forest px-5 py-2.5 text-center text-sm font-semibold text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-lg"
             >
               List an item
-            </a>
-            <span className="text-sm text-forest/60">
-              {items.filter((i) => i.status === "Available").length} items available right now
-            </span>
+            </Link>
+            {items && (
+              <span className="text-sm text-forest/60">
+                {items.filter((i) => i.status === "Available").length} items available right now
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -85,7 +111,7 @@ export default function BrowsePage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Title or author"
+              placeholder="Title, description or ISBN"
               className="w-full rounded-md border border-sage-dark bg-white px-3 py-2 text-sm text-forest placeholder:text-forest/40 focus:border-forest focus:outline-none"
             />
           </div>
@@ -127,7 +153,9 @@ export default function BrowsePage() {
         <div className="flex-1">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="font-serif text-2xl font-semibold text-forest">
-              {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"} found
+              {items === null
+                ? "Items"
+                : `${filteredItems.length} ${filteredItems.length === 1 ? "item" : "items"} found`}
             </h2>
             <label className="flex items-center gap-2 text-sm text-forest/80">
               Sort by
@@ -145,9 +173,23 @@ export default function BrowsePage() {
             </label>
           </div>
 
-          {filteredItems.length === 0 ? (
+          {loadError ? (
+            <ErrorBox
+              message={loadError}
+              onRetry={() => {
+                setLoadError(null);
+                loadItems();
+              }}
+            />
+          ) : items === null ? (
+            <Loading label="Loading items…" />
+          ) : filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-sage-dark py-20 text-center">
-              <p className="text-forest/70">No items match — try widening your filters.</p>
+              <p className="text-forest/70">
+                {items.length === 0
+                  ? "Nothing has been listed yet. Be the first!"
+                  : "No items match — try widening your filters."}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

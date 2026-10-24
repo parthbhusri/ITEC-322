@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth";
 
 const links = [
   { href: "/", label: "Browse" },
@@ -34,6 +35,8 @@ function LoginIcon() {
 export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, loading, logout } = useAuth();
+  const firstName = user?.full_name.split(" ")[0];
 
   return (
     <nav className="border-b border-sage-dark bg-paper">
@@ -65,14 +68,27 @@ export default function Navbar() {
           })}
         </div>
 
-        <div className="hidden md:flex md:justify-end">
-          <Link
-            href="/login"
-            className="flex items-center gap-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md"
-          >
-            <LoginIcon />
-            Log In
-          </Link>
+        <div className="hidden md:flex md:items-center md:justify-end md:gap-3">
+          {loading ? null : user ? (
+            <>
+              <span className="text-sm text-forest/70">Hi, {firstName}</span>
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-md border border-forest px-3 py-1.5 text-sm font-medium text-forest transition-transform duration-150 hover:scale-105 hover:bg-sage"
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md"
+            >
+              <LoginIcon />
+              Log In
+            </Link>
+          )}
         </div>
 
         <button
@@ -129,14 +145,27 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center justify-center gap-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm hover:bg-forest-light"
-            >
-              <LoginIcon />
-              Log In
-            </Link>
+            {user ? (
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setMenuOpen(false);
+                }}
+                className="rounded-md border border-forest px-4 py-2 text-sm font-medium text-forest hover:bg-sage"
+              >
+                Log Out ({firstName})
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm hover:bg-forest-light"
+              >
+                <LoginIcon />
+                Log In
+              </Link>
+            )}
           </div>
         </div>
       )}
