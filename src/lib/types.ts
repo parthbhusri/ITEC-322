@@ -16,22 +16,6 @@ export const LISTING_CATEGORIES = [
 
 export const CONDITIONS = ["New", "Like New", "Good", "Fair", "Worn"] as const;
 
-export const CATEGORY_ICONS: Record<string, string> = {
-  Textbook: "📚",
-  Calculator: "🧮",
-  "Lab Equipment": "🥼",
-  Electronics: "💻",
-  Tool: "🔧",
-  "Nursing Equipment": "🩺",
-  "Camera Equipment": "📷",
-  "Study Equipment": "📝",
-  Other: "📦",
-};
-
-export function categoryIcon(category: string | null | undefined): string {
-  return (category && CATEGORY_ICONS[category]) || "📦";
-}
-
 /** An item as the UI uses it (converted from the backend's shape). */
 export interface Item {
   id: string;
@@ -46,7 +30,6 @@ export interface Item {
   description: string;
   campusLocation: string;
   ownerName: string;
-  coverIcon: string;
   imageUrl: string | null;
 }
 
@@ -64,7 +47,6 @@ export function toItem(api: ApiItem): Item {
     campusLocation:
       api.pickup_location || [api.campus, api.university].filter(Boolean).join(", ") || "Ask the owner",
     ownerName: api.owner_name ?? "A student",
-    coverIcon: categoryIcon(api.category),
     imageUrl: imageSrc(api.image_url),
   };
 }

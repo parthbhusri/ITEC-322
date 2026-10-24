@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import { ChevronLeft, Info } from "lucide-react";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import ItemImage from "@/components/ItemImage";
 import { ErrorBox, Loading, LoginRequired } from "@/components/PageStatus";
@@ -10,9 +11,6 @@ import { useToast } from "@/components/ToastProvider";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatDate, formatPrice, rentalDays, todayISO, toItem, type Item } from "@/lib/types";
-
-const inputClass =
-  "w-full rounded-md border border-sage-dark bg-white px-3 py-2 text-sm text-forest focus:border-forest focus:outline-none";
 
 function addDays(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00`);
@@ -40,8 +38,7 @@ export default function CheckoutPage() {
     api
       .item(id)
       .then((data) => {
-        const loaded = toItem(data);
-        setItem(loaded);
+        setItem(toItem(data));
         setHandoff(data.pickup_location ?? "");
       })
       .catch((err: Error) => setLoadError(err.message));
@@ -80,7 +77,7 @@ export default function CheckoutPage() {
 
   if (!item) {
     return (
-      <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
+      <div className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
         {loadError ? <ErrorBox message={loadError} /> : <Loading />}
       </div>
     );
@@ -88,137 +85,143 @@ export default function CheckoutPage() {
 
   if (user.id === item.ownerId) {
     return (
-      <div className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-        <p className="font-serif text-xl font-semibold text-forest">This is your own listing</p>
-        <p className="text-sm text-forest/70">You can&apos;t rent an item you listed.</p>
-        <Link href={`/items/${item.id}`} className="text-sm font-medium text-forest underline">
-          Back to item
-        </Link>
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
+        <div className="panel flex flex-col items-center gap-3 px-8 py-10 text-center">
+          <h1 className="font-display text-2xl font-bold">This is your own listing</h1>
+          <p className="text-sm text-mocha-600">You can&apos;t rent an item you listed.</p>
+          <Link href={`/items/${item.id}`} className="btn btn-outline mt-2">
+            Back to item
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10 md:flex-row">
-      <div className="flex-1">
-        <h1 className="mb-6 font-serif text-2xl font-semibold text-forest">Request to Rent</h1>
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <Link
+        href={`/items/${item.id}`}
+        className="mb-6 inline-flex items-center gap-1 text-sm text-platinum/60 hover:text-platinum"
+      >
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+        Back to item
+      </Link>
 
-        {submitted ? (
-          <div className="relative rounded-lg border border-dashed border-forest bg-sage p-6 text-center">
-            <ConfettiBurst />
-            <p className="font-medium text-forest">Request sent!</p>
-            <p className="mt-1 text-sm text-forest/70">
-              {item.ownerName} will review it. Once they approve, you can pay from My Rentals.
-            </p>
-            <Link
-              href="/my-rentals"
-              className="mt-4 inline-block rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper hover:bg-forest-light"
-            >
-              Go to My Rentals
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label htmlFor="start" className="mb-1 block text-sm font-medium text-forest/80">
-                  Start date
+      <div className="flex flex-col gap-6 md:flex-row md:items-start">
+        <div className="panel flex-1 p-6 sm:p-8">
+          <h1 className="mb-6 font-display text-3xl font-bold tracking-tight">Request to rent</h1>
+
+          {submitted ? (
+            <div className="relative rounded-2xl bg-lavender-100 p-8 text-center">
+              <ConfettiBurst />
+              <p className="font-display text-xl font-bold">Request sent!</p>
+              <p className="mx-auto mt-2 max-w-sm text-sm text-mocha-700">
+                {item.ownerName} will review it. Once they approve, you can pay from My Rentals.
+              </p>
+              <Link href="/my-rentals" className="btn btn-primary mt-5">
+                Go to My Rentals
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="start" className="field-label">
+                    Start date
+                  </label>
+                  <input
+                    id="start"
+                    type="date"
+                    required
+                    min={todayISO()}
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      if (endDate < e.target.value) setEndDate(e.target.value);
+                    }}
+                    className="field"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="end" className="field-label">
+                    End date
+                  </label>
+                  <input
+                    id="end"
+                    type="date"
+                    required
+                    min={startDate || todayISO()}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="field"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="handoff" className="field-label">
+                  Where to meet
                 </label>
                 <input
-                  id="start"
-                  type="date"
-                  required
-                  min={todayISO()}
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    if (endDate < e.target.value) setEndDate(e.target.value);
-                  }}
-                  className={inputClass}
+                  id="handoff"
+                  type="text"
+                  value={handoff}
+                  onChange={(e) => setHandoff(e.target.value)}
+                  placeholder="e.g. Library main entrance"
+                  className="field"
                 />
               </div>
-              <div className="flex-1">
-                <label htmlFor="end" className="mb-1 block text-sm font-medium text-forest/80">
-                  End date
-                </label>
-                <input
-                  id="end"
-                  type="date"
-                  required
-                  min={startDate || todayISO()}
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
 
-            <div>
-              <label htmlFor="handoff" className="mb-1 block text-sm font-medium text-forest/80">
-                Hand-off location
-              </label>
-              <input
-                id="handoff"
-                type="text"
-                value={handoff}
-                onChange={(e) => setHandoff(e.target.value)}
-                placeholder="e.g. Library — Main Entrance"
-                className={inputClass}
-              />
-            </div>
+              <p className="flex gap-2.5 rounded-xl bg-lavender-50 px-4 py-3 text-sm text-mocha-700 ring-1 ring-lavender-200">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-lavender-700" aria-hidden="true" />
+                <span>
+                  You won&apos;t pay yet. The owner approves your request first, then you pay
+                  with Stripe from My Rentals.
+                </span>
+              </p>
 
-            <p className="rounded-md bg-sage px-3 py-2 text-sm text-forest/70">
-              No payment yet. The owner approves your request first, then you pay securely
-              with Stripe from <strong>My Rentals</strong>.
-            </p>
+              {formError && <p className="text-sm text-danger">{formError}</p>}
 
-            {formError && <p className="text-sm text-ink">{formError}</p>}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="mt-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md disabled:cursor-wait disabled:opacity-60 disabled:hover:scale-100"
-            >
-              {submitting ? "Sending…" : "Send Request"}
-            </button>
-          </form>
-        )}
-      </div>
-
-      <aside className="w-full shrink-0 self-start rounded-lg border border-sage-dark bg-sage p-5 md:w-72">
-        <h2 className="mb-4 font-serif text-lg font-semibold text-forest">Order Summary</h2>
-        <div className="mb-2 flex items-center gap-3">
-          <ItemImage
-            item={item}
-            iconClassName="text-3xl"
-            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md"
-          />
-          <div>
-            <p className="text-sm font-medium text-forest">{item.title}</p>
-            <p className="text-xs text-forest/60">{item.condition}</p>
-          </div>
+              <button type="submit" disabled={submitting} className="btn btn-primary py-3 text-base">
+                {submitting ? "Sending…" : "Send request"}
+              </button>
+            </form>
+          )}
         </div>
-        <dl className="mt-4 space-y-2 border-t border-sage-dark pt-4 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-forest/70">Price</dt>
-            <dd className="font-medium text-forest">{formatPrice(item.price)}/day</dd>
+
+        <aside className="panel w-full shrink-0 overflow-hidden md:w-80">
+          <ItemImage
+            title={item.title}
+            category={item.category}
+            imageUrl={item.imageUrl}
+            className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden"
+          />
+          <div className="p-5">
+            <p className="text-xs text-mocha-500">{item.category}</p>
+            <h2 className="font-display text-lg font-semibold leading-snug">{item.title}</h2>
+            <dl className="mt-4 space-y-2 border-t border-silver/70 pt-4 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-mocha-500">Price</dt>
+                <dd className="font-medium">{formatPrice(item.price)} per day</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-mocha-500">Dates</dt>
+                <dd className="text-right font-medium">
+                  {days > 0 ? `${formatDate(startDate)} to ${formatDate(endDate)}` : "Choose dates"}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-mocha-500">Days</dt>
+                <dd className="font-medium">{days}</dd>
+              </div>
+              <div className="flex items-baseline justify-between border-t border-silver/70 pt-3">
+                <dt className="font-semibold">Total</dt>
+                <dd className="font-display text-2xl font-bold">{formatPrice(total)}</dd>
+              </div>
+            </dl>
           </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-forest/70">Dates</dt>
-            <dd className="text-right font-medium text-forest">
-              {days > 0 ? `${formatDate(startDate)} – ${formatDate(endDate)}` : "—"}
-            </dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-forest/70">Days</dt>
-            <dd className="font-medium text-forest">{days}</dd>
-          </div>
-          <div className="flex justify-between border-t border-sage-dark pt-2">
-            <dt className="font-semibold text-forest">Total</dt>
-            <dd className="font-semibold text-forest">{formatPrice(total)}</dd>
-          </div>
-        </dl>
-      </aside>
+        </aside>
+      </div>
     </div>
   );
 }

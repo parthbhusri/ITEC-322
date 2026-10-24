@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState } from "react";
+import { Check } from "lucide-react";
 
 interface Toast {
   id: number;
@@ -21,7 +22,7 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const showToast = useCallback((message: string) => {
-    const id = Date.now();
+    const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -35,9 +36,10 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="pointer-events-auto flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-medium text-paper shadow-lg"
+            role="status"
+            className="pointer-events-auto flex items-center gap-2 rounded-full bg-lavender-200 px-5 py-2.5 text-sm font-semibold text-mocha-900 shadow-[0_12px_30px_-10px_rgb(0_0_0/0.6)] ring-1 ring-lavender-500/40"
           >
-            <span aria-hidden="true">✅</span>
+            <Check className="h-4 w-4 text-lavender-700" aria-hidden="true" />
             {toast.message}
           </div>
         ))}

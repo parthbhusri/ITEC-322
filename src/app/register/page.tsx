@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import AuthSidePanel from "@/components/AuthSidePanel";
+import AuthShell from "@/components/AuthShell";
 import { useToast } from "@/components/ToastProvider";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -21,8 +21,6 @@ interface FormErrors {
 // Student emails end in .edu (US) or .edu.au (Australia)
 const STUDENT_EMAIL = /^[^\s@]+@[^\s@]+\.edu(\.[a-z]{2})?$/i;
 
-const inputClass =
-  "w-full rounded-md border border-sage-dark bg-white px-3 py-2 text-sm text-forest placeholder:text-forest/40 focus:border-forest focus:outline-none";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -82,142 +80,131 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1">
-      <AuthSidePanel />
-
-      <div className="flex w-full flex-col justify-center px-6 py-16 md:flex-1">
-        <div className="mx-auto w-full max-w-sm">
-          <h1 className="mb-1 font-serif text-2xl font-semibold text-forest">Create Account</h1>
-          <p className="mb-8 text-sm text-forest/70">
-            We&apos;ll verify with your student email to keep the hub campus-only.
-          </p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-            <div>
-              <label htmlFor="name" className="mb-1 block text-sm font-medium text-forest/80">
-                Full name
-              </label>
-              <input
-                id="name"
-                type="text"
-                autoComplete="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={inputClass}
-              />
-              {errors.name && <p className="mt-1 text-xs text-ink">{errors.name}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-forest/80">
-                Student email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@university.edu.au"
-                className={inputClass}
-              />
-              {errors.email && <p className="mt-1 text-xs text-ink">{errors.email}</p>}
-            </div>
-
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label
-                  htmlFor="university"
-                  className="mb-1 block text-sm font-medium text-forest/80"
-                >
-                  University
-                </label>
-                <input
-                  id="university"
-                  type="text"
-                  value={university}
-                  onChange={(e) => setUniversity(e.target.value)}
-                  placeholder="e.g. ACU"
-                  className={inputClass}
-                />
-                {errors.university && (
-                  <p className="mt-1 text-xs text-ink">{errors.university}</p>
-                )}
-              </div>
-              <div className="flex-1">
-                <label htmlFor="campus" className="mb-1 block text-sm font-medium text-forest/80">
-                  Campus
-                </label>
-                <input
-                  id="campus"
-                  type="text"
-                  value={campus}
-                  onChange={(e) => setCampus(e.target.value)}
-                  placeholder="e.g. North Sydney"
-                  className={inputClass}
-                />
-                {errors.campus && <p className="mt-1 text-xs text-ink">{errors.campus}</p>}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium text-forest/80">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-              />
-              {errors.password && <p className="mt-1 text-xs text-ink">{errors.password}</p>}
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-1 block text-sm font-medium text-forest/80"
-              >
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={inputClass}
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-xs text-ink">{errors.confirmPassword}</p>
-              )}
-            </div>
-
-            {errors.form && (
-              <p className="rounded-md border border-ink/40 bg-ink/5 px-3 py-2 text-sm text-ink">
-                {errors.form}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="mt-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md disabled:cursor-wait disabled:opacity-60 disabled:hover:scale-100"
-            >
-              {submitting ? "Creating account…" : "Create Account"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-forest/70">
-            Already have an account?{" "}
-            <Link href="/login" className="font-medium text-forest underline">
-              Log In
-            </Link>
-          </p>
+    <AuthShell
+      title="Create your account"
+      subtitle="Use your student email so the hub stays campus-only."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-lavender-700 underline-offset-2 hover:underline">
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+        <div>
+          <label htmlFor="name" className="field-label">
+            Full name
+          </label>
+          <input
+            id="name"
+            type="text"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="field"
+          />
+          {errors.name && <p className="field-error">{errors.name}</p>}
         </div>
-      </div>
-    </div>
+
+        <div>
+          <label htmlFor="email" className="field-label">
+            Student email
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@university.edu.au"
+            className="field"
+          />
+          {errors.email && <p className="field-error">{errors.email}</p>}
+        </div>
+
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label
+              htmlFor="university"
+              className="field-label"
+            >
+              University
+            </label>
+            <input
+              id="university"
+              type="text"
+              value={university}
+              onChange={(e) => setUniversity(e.target.value)}
+              placeholder="e.g. ACU"
+              className="field"
+            />
+            {errors.university && (
+              <p className="field-error">{errors.university}</p>
+            )}
+          </div>
+          <div className="flex-1">
+            <label htmlFor="campus" className="field-label">
+              Campus
+            </label>
+            <input
+              id="campus"
+              type="text"
+              value={campus}
+              onChange={(e) => setCampus(e.target.value)}
+              placeholder="e.g. North Sydney"
+              className="field"
+            />
+            {errors.campus && <p className="field-error">{errors.campus}</p>}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="password" className="field-label">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="field"
+          />
+          {errors.password && <p className="field-error">{errors.password}</p>}
+        </div>
+
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="field-label"
+          >
+            Confirm password
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="field"
+          />
+          {errors.confirmPassword && (
+            <p className="field-error">{errors.confirmPassword}</p>
+          )}
+        </div>
+
+        {errors.form && (
+          <p role="alert" className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">
+            {errors.form}
+          </p>
+        )}
+
+        <button type="submit" disabled={submitting} className="btn btn-primary mt-2 py-3 text-base">
+          {submitting ? "Creating account…" : "Create account"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

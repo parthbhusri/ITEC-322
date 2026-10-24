@@ -7,6 +7,7 @@ import StampBadge from "@/components/StampBadge";
 import FavoriteButton from "@/components/FavoriteButton";
 import ItemImage from "@/components/ItemImage";
 import { ErrorBox, Loading } from "@/components/PageStatus";
+import { ChevronLeft, ImagePlus, MapPin, Sparkles, Tag, UserRound } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -56,26 +57,32 @@ export default function ItemDetailPage() {
 
   if (notFound) {
     return (
-      <div className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-        <p className="font-serif text-xl font-semibold text-forest">Item not found</p>
-        <p className="text-sm text-forest/70">It may have been removed by its owner.</p>
-        <Link href="/" className="text-sm font-medium text-forest underline">
-          Back to browsing
-        </Link>
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
+        <div className="panel flex flex-col items-center gap-3 px-8 py-10 text-center">
+          <h1 className="font-display text-2xl font-bold">Item not found</h1>
+          <p className="text-sm text-mocha-600">The owner may have removed it.</p>
+          <Link href="/" className="btn btn-primary mt-2">
+            Back to browsing
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (!item) {
     return (
-      <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
-        {error ? <ErrorBox
+      <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+        {error ? (
+          <ErrorBox
             message={error}
             onRetry={() => {
               setError(null);
               load();
             }}
-          /> : <Loading />}
+          />
+        ) : (
+          <Loading />
+        )}
       </div>
     );
   }
@@ -83,21 +90,41 @@ export default function ItemDetailPage() {
   const isOwner = user?.id === item.ownerId;
   const canRent = item.status === "Available" && !isOwner;
 
+  const details = [
+    { icon: Sparkles, label: "Condition", value: item.condition },
+    { icon: Tag, label: "Category", value: item.category },
+    { icon: MapPin, label: "Hand-off", value: item.campusLocation },
+    { icon: UserRound, label: "Listed by", value: isOwner ? "You" : item.ownerName },
+  ];
+
   return (
-    <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
-      <Link href="/" className="mb-6 inline-block text-sm text-forest/60 hover:text-forest">
-        &larr; Back to browsing
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <Link
+        href="/"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-platinum/60 hover:text-platinum"
+      >
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+        Back to browsing
       </Link>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div className="group mx-auto w-full max-w-xs">
-          <ItemImage
-            item={item}
-            iconClassName="text-8xl"
-            className="flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-xl border border-sage-dark bg-white"
-          />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.1fr] md:gap-8">
+        <div>
+          <div className="panel relative overflow-hidden p-3">
+            <ItemImage
+              title={item.title}
+              category={item.category}
+              imageUrl={item.imageUrl}
+              size="xl"
+              className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[0.9rem]"
+            />
+            <FavoriteButton
+              itemId={item.id}
+              className="absolute right-6 top-6 flex h-11 w-11 items-center justify-center rounded-full bg-platinum-50/90 shadow-md ring-1 ring-silver/60 transition-transform duration-150 hover:scale-110"
+            />
+          </div>
           {isOwner && (
-            <label className="mt-3 block cursor-pointer rounded-md border border-forest px-3 py-2 text-center text-sm font-medium text-forest hover:bg-sage">
+            <label className="btn btn-ghost mt-3 w-full">
+              <ImagePlus className="h-4 w-4" aria-hidden="true" />
               {uploading ? "Uploading…" : item.imageUrl ? "Change photo" : "Add a photo"}
               <input
                 type="file"
@@ -110,75 +137,54 @@ export default function ItemDetailPage() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h1 className="font-serif text-2xl font-semibold text-forest">{item.title}</h1>
-              {item.isbn && <p className="text-sm text-forest/60">ISBN {item.isbn}</p>}
-            </div>
-            <FavoriteButton
-              itemId={item.id}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sage-dark bg-white text-xl shadow-sm transition-transform duration-150 hover:scale-110"
-            />
-          </div>
-
+        <div className="panel flex flex-col gap-5 p-6 sm:p-8">
           <div>
             <StampBadge status={item.status} />
+            <h1 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight">
+              {item.title}
+            </h1>
+            {item.isbn && <p className="mt-1 text-sm text-mocha-500">ISBN {item.isbn}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 rounded-lg border border-sage-dark bg-sage p-4">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-forest/60">Condition</p>
-              <p className="font-medium text-forest">{item.condition}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-forest/60">Price</p>
-              <p className="font-medium text-forest">{formatPrice(item.price)}/day</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-forest/60">Category</p>
-              <p className="font-medium text-forest">{item.category}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-forest/60">Hand-off</p>
-              <p className="font-medium text-forest">{item.campusLocation}</p>
-            </div>
-          </div>
+          <p className="flex items-baseline gap-1.5">
+            <span className="font-display text-4xl font-bold">{formatPrice(item.price)}</span>
+            <span className="text-mocha-500">per day</span>
+          </p>
+
+          <dl className="grid grid-cols-1 gap-3 rounded-xl bg-platinum p-4 sm:grid-cols-2">
+            {details.map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-start gap-2.5">
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-lavender-700" aria-hidden="true" />
+                <div>
+                  <dt className="text-xs text-mocha-500">{label}</dt>
+                  <dd className="text-sm font-medium">{value}</dd>
+                </div>
+              </div>
+            ))}
+          </dl>
 
           {item.description && (
-            <div>
-              <p className="mb-1 text-sm font-medium text-forest/80">Description</p>
-              <p className="whitespace-pre-line text-sm text-forest/70">{item.description}</p>
-            </div>
+            <p className="whitespace-pre-line text-[0.95rem] leading-relaxed text-mocha-700">
+              {item.description}
+            </p>
           )}
 
-          <p className="text-sm text-forest/60">
-            Listed by {isOwner ? "you" : item.ownerName}
-          </p>
-          {error && <p className="text-sm text-ink">{error}</p>}
-        </div>
-      </div>
+          {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="sticky bottom-4 mt-10 flex justify-center">
-        {isOwner ? (
-          <Link
-            href="/my-rentals?tab=requests"
-            className="rounded-full border border-forest bg-white px-8 py-3 font-medium text-forest shadow-lg hover:bg-sage"
-          >
-            This is your listing · See requests
-          </Link>
-        ) : canRent ? (
-          <Link
-            href={`/checkout/${item.id}`}
-            className="rounded-full bg-forest px-8 py-3 font-medium text-paper shadow-lg transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-xl"
-          >
-            Request to Rent
-          </Link>
-        ) : (
-          <span className="rounded-full bg-sage-dark px-8 py-3 font-medium text-forest/60">
-            Not available to rent
-          </span>
-        )}
+          <div className="mt-auto pt-2">
+            {isOwner ? (
+              <Link href="/my-rentals?tab=requests" className="btn btn-outline w-full sm:w-auto">
+                This is your listing. See requests
+              </Link>
+            ) : canRent ? (
+              <Link href={`/checkout/${item.id}`} className="btn btn-primary w-full px-8 py-3 text-base sm:w-auto">
+                Request to rent
+              </Link>
+            ) : (
+              <p className="text-sm text-mocha-500">This item isn&apos;t available to rent right now.</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

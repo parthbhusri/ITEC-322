@@ -1,32 +1,58 @@
 /* eslint-disable @next/next/no-img-element -- photos come from the API server */
-import type { Item } from "@/lib/types";
+import { createElement } from "react";
+import { itemIcon, itemTint } from "@/lib/itemArt";
 
-// Shows the item's uploaded photo, or its category icon when there isn't one.
+// Shows the item's uploaded photo, or a picture of what the item is
+// (headphones, a book, a stethoscope...) when there's no photo.
 export default function ItemImage({
-  item,
-  iconClassName,
-  className = "flex aspect-[3/4] w-full items-center justify-center overflow-hidden bg-white",
+  title,
+  category,
+  imageUrl,
+  size = "lg",
+  className = "relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden",
 }: {
-  item: Pick<Item, "title" | "coverIcon" | "imageUrl">;
-  iconClassName: string;
+  title: string;
+  category?: string | null;
+  imageUrl?: string | null;
+  size?: "sm" | "lg" | "xl";
   className?: string;
 }) {
+  if (imageUrl) {
+    return (
+      <div className={className}>
+        <img src={imageUrl} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+      </div>
+    );
+  }
+
+  const tint = itemTint(category);
+  const iconSize = size === "sm" ? "h-6 w-6" : size === "xl" ? "h-24 w-24" : "h-16 w-16";
+  const ring = size === "sm" ? "" : size === "xl" ? "h-44 w-44" : "h-28 w-28";
+
   return (
-    <div className={className}>
-      {item.imageUrl ? (
-        <img
-          src={item.imageUrl}
-          alt={item.title}
-          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-        />
-      ) : (
+    <div
+      className={className}
+      style={{ background: `linear-gradient(150deg, ${tint.from} 0%, ${tint.to} 100%)` }}
+      role="img"
+      aria-label={title}
+    >
+      {size !== "sm" && (
         <span
-          className={`${iconClassName} transition-transform duration-300 ease-out group-hover:scale-125`}
+          className={`absolute rounded-full ${ring}`}
+          style={{
+            background: "rgb(255 255 255 / 0.45)",
+            boxShadow: "0 0 0 10px rgb(255 255 255 / 0.18)",
+          }}
           aria-hidden="true"
-        >
-          {item.coverIcon}
-        </span>
+        />
       )}
+      {/* createElement: the icon is picked from a fixed set, not created here */}
+      {createElement(itemIcon(title, category), {
+        className: `relative ${iconSize}`,
+        style: { color: tint.ink },
+        strokeWidth: size === "sm" ? 1.75 : 1.25,
+        "aria-hidden": true,
+      })}
     </div>
   );
 }

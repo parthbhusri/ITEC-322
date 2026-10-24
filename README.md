@@ -82,9 +82,22 @@ except paying works.
 | Admin | `/admin` | Listing stats and latest listings from the API |
 | Log in / Register | `/login`, `/register` | Real accounts with JWT login (expires after 30 minutes) |
 
-**Design:** library card-catalog theme (forest green + rust on white), serif wordmark,
-rubber-stamp status badges, responsive layout with a mobile menu, hover animations,
-confetti and toast notifications.
+## Design
+
+- **Colours:** mocha brown background (`#4B3428`), platinum silver cards and text
+  (`#E6E5E3` / `#F4F3F1`), pale lavender buttons and accents (`#DCD0F3`). All colours
+  are defined once as tokens in `src/app/globals.css`.
+- **Brand:** the logo is a rental hang-tag with swap arrows (borrow and return)
+  (`src/components/Logo.tsx`, browser icon in `src/app/icon.svg`). Item cards are
+  shaped like the same hang-tag, with a punched hole and string.
+- **Item pictures:** items without a photo get a picture of what they are, chosen
+  from the title (headphones, a book, a stethoscope, a drill...) with the category
+  as a fallback (`src/lib/itemArt.ts`). Uploaded photos always replace it.
+- **Type:** Bricolage Grotesque for headings, Geist for body text.
+- **Buttons:** shared `btn btn-primary` (lavender), `btn-ghost` (on mocha) and
+  `btn-outline` (on cards) classes; form fields use `field`.
+- Responsive down to phone width, visible keyboard focus, and animations switch
+  off for people who set "reduce motion".
 
 ## Known gaps
 

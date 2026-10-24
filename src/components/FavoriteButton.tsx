@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 import { FAVORITES_EVENT, isFavorite, toggleFavorite } from "@/lib/favorites";
 
 export default function FavoriteButton({
   itemId,
-  className,
+  className = "flex h-9 w-9 items-center justify-center rounded-full bg-platinum-50/90 shadow-sm ring-1 ring-silver/60 transition-transform duration-150 hover:scale-110",
 }: {
   itemId: string;
   className?: string;
@@ -35,12 +36,14 @@ export default function FavoriteButton({
       }}
       aria-label={favorited ? "Remove from saved items" : "Save item"}
       aria-pressed={favorited}
-      className={
-        className ??
-        "flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm transition-transform duration-150 hover:scale-110"
-      }
+      className={className}
     >
-      {favorited ? "❤️" : "🤍"}
+      <Heart
+        className={`h-[18px] w-[18px] transition-colors ${
+          favorited ? "fill-lavender-500 text-lavender-700" : "text-mocha-500"
+        }`}
+        aria-hidden="true"
+      />
     </button>
   );
 }

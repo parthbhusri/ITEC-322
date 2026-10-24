@@ -6,6 +6,7 @@ import StampBadge from "@/components/StampBadge";
 import { ErrorBox, Loading } from "@/components/PageStatus";
 import { api } from "@/lib/api";
 import { formatPrice, toItem, type Item } from "@/lib/types";
+import { GraduationCap, LayoutGrid, PackageCheck, Wallet } from "lucide-react";
 
 // Built from the public items endpoint. Rental activity across all users
 // needs an admin-only endpoint, which the backend doesn't have yet.
@@ -32,14 +33,14 @@ export default function AdminPage() {
     const owners = new Set(all.map((item) => item.ownerId)).size;
     const avg = all.length ? all.reduce((sum, item) => sum + item.price, 0) / all.length : 0;
     return [
-      { label: "Total Listings", value: String(all.length), icon: "📊" },
+      { label: "Total listings", value: String(all.length), icon: LayoutGrid },
       {
-        label: "Available Now",
+        label: "Available now",
         value: String(all.filter((item) => item.status === "Available").length),
-        icon: "📦",
+        icon: PackageCheck,
       },
-      { label: "Students Listing", value: String(owners), icon: "🧑‍🎓" },
-      { label: "Avg Price / Day", value: formatPrice(avg.toFixed(2)), icon: "💲" },
+      { label: "Students listing", value: String(owners), icon: GraduationCap },
+      { label: "Average price per day", value: formatPrice(avg.toFixed(2)), icon: Wallet },
     ];
   }, [items]);
 
@@ -53,7 +54,7 @@ export default function AdminPage() {
 
   if (error) {
     return (
-      <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+      <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
         <ErrorBox
           message={error}
           onRetry={() => {
@@ -67,18 +68,23 @@ export default function AdminPage() {
   if (!items) return <Loading />;
 
   return (
-    <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
-      <h1 className="mb-6 font-serif text-2xl font-semibold text-forest">Admin Dashboard</h1>
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <h1 className="font-display text-3xl font-bold tracking-tight text-platinum sm:text-4xl">Admin dashboard</h1>
+      <p className="mb-6 mt-1.5 text-platinum/65">What&apos;s listed on the hub right now.</p>
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="rounded-lg border border-sage-dark bg-white p-4 text-center shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+            className="panel flex items-center gap-3 p-4"
           >
-            <span className="text-2xl">{metric.icon}</span>
-            <p className="mt-1 font-serif text-3xl font-semibold text-forest">{metric.value}</p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-forest/60">{metric.label}</p>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-lavender-100">
+              <metric.icon className="h-5 w-5 text-lavender-700" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="font-display text-2xl font-bold leading-none">{metric.value}</p>
+              <p className="mt-1 text-xs text-mocha-500">{metric.label}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -87,34 +93,34 @@ export default function AdminPage() {
         {byCategory.map(([category, count]) => (
           <span
             key={category}
-            className="rounded-full border border-sage-dark bg-white px-3 py-1 text-xs text-forest/80"
+            className="rounded-full border border-platinum/20 bg-mocha-800/60 px-3 py-1 text-xs text-platinum/80"
           >
-            {category}: <strong>{count}</strong>
+            {category} <strong className="ml-1 text-platinum">{count}</strong>
           </span>
         ))}
       </div>
 
-      <h2 className="mb-3 font-serif text-lg font-semibold text-forest">Latest Listings</h2>
-      <div className="overflow-x-auto rounded-lg border border-sage-dark">
+      <h2 className="mb-3 font-display text-xl font-semibold text-platinum">Latest listings</h2>
+      <div className="panel overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-sage text-forest/70">
+          <thead className="bg-platinum text-mocha-600">
             <tr>
-              <th className="px-4 py-2 font-medium">Item</th>
-              <th className="px-4 py-2 font-medium">Listed by</th>
-              <th className="px-4 py-2 font-medium">Price</th>
-              <th className="px-4 py-2 font-medium">Status</th>
+              <th className="px-4 py-2.5 font-medium">Item</th>
+              <th className="px-4 py-2.5 font-medium">Listed by</th>
+              <th className="px-4 py-2.5 font-medium">Price</th>
+              <th className="px-4 py-2.5 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-sage-dark bg-white">
+          <tbody className="divide-y divide-silver/60">
             {items.slice(0, 10).map((item) => (
               <tr key={item.id}>
-                <td className="px-4 py-3 text-forest">
+                <td className="px-4 py-3 font-medium">
                   <Link href={`/items/${item.id}`} className="hover:underline">
                     {item.title}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-forest/70">{item.ownerName}</td>
-                <td className="px-4 py-3 text-forest/70">{formatPrice(item.price)}/day</td>
+                <td className="px-4 py-3 text-mocha-600">{item.ownerName}</td>
+                <td className="px-4 py-3 text-mocha-600">{formatPrice(item.price)} per day</td>
                 <td className="px-4 py-3">
                   <StampBadge status={item.status} />
                 </td>
@@ -124,7 +130,7 @@ export default function AdminPage() {
         </table>
       </div>
 
-      <p className="mt-4 text-xs text-forest/50">
+      <p className="mt-4 text-xs text-platinum/45">
         Rental activity across all students needs an admin-only API endpoint, which the
         backend doesn&apos;t have yet.
       </p>

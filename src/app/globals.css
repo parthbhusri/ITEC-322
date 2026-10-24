@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   Campus Rental Hub — brand tokens
+   Mocha brown background, platinum silver surfaces/text,
+   pale lavender accents and buttons.
+   ------------------------------------------------------------------ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #1b4332;
+  --background: #4b3428;
+  --foreground: #e6e5e3;
 }
 
 @theme inline {
@@ -10,22 +16,223 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-lora);
+  --font-display: var(--font-bricolage);
 
-  --color-paper: #ffffff;
-  --color-paper-dark: #f3f1ea;
-  --color-forest: #1b4332;
-  --color-forest-light: #2d6a4f;
-  --color-ink: #b4471f;
-  --color-ink-light: #d4692f;
-  --color-sage: #f6f7f3;
-  --color-sage-dark: #e3e5de;
+  /* Mocha */
+  --color-mocha-950: #22170f;
+  --color-mocha-900: #2c1e17;
+  --color-mocha-800: #3a281f;
+  --color-mocha-700: #4b3428; /* page background */
+  --color-mocha-600: #5d4335;
+  --color-mocha-500: #7a5a48;
+  --color-mocha-300: #a47864; /* mocha mousse */
+  --color-mocha-100: #e8dad1;
+
+  /* Platinum / silver */
+  --color-platinum: #e6e5e3;
+  --color-platinum-50: #f4f3f1;
+  --color-silver: #b9b8b5;
+  --color-silver-600: #7d7c79;
+
+  /* Lavender */
+  --color-lavender-50: #f6f2fd;
+  --color-lavender-100: #ede6fa;
+  --color-lavender-200: #dcd0f3; /* pale lavender: buttons */
+  --color-lavender-300: #c9b8ec;
+  --color-lavender-500: #8d77cf;
+  --color-lavender-700: #5e4b99; /* lavender text on light surfaces */
+  --color-lavender-900: #3a2d63;
+
+  /* Status */
+  --color-danger: #b4472f;
+  --color-danger-soft: #f6dcd4;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* soft lavender light from the top, so the mocha never looks flat */
+  background-image:
+    radial-gradient(60rem 30rem at 15% -10%, rgb(220 208 243 / 0.13), transparent 70%),
+    radial-gradient(40rem 25rem at 100% 0%, rgb(164 120 100 / 0.25), transparent 70%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Keyboard focus is always visible */
+:focus-visible {
+  outline: 2px solid var(--color-lavender-300);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-lavender-300);
+  color: var(--color-mocha-900);
+}
+
+/* ---------- Buttons ---------- */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-sm {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Main action: pale lavender with a soft glow */
+  .btn-primary {
+    background: linear-gradient(180deg, #e7ddf8 0%, var(--color-lavender-200) 55%, var(--color-lavender-300) 100%);
+    color: var(--color-mocha-900);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.7),
+      0 0 0 1px rgb(141 119 207 / 0.35),
+      0 6px 18px -6px rgb(201 184 236 / 0.75);
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.8),
+      0 0 0 1px rgb(141 119 207 / 0.5),
+      0 10px 26px -6px rgb(201 184 236 / 0.95);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  /* Secondary on the mocha background */
+  .btn-ghost {
+    border: 1px solid rgb(230 229 227 / 0.35);
+    color: var(--color-platinum);
+    background: rgb(230 229 227 / 0.04);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--color-lavender-200);
+    background: rgb(220 208 243 / 0.1);
+  }
+
+  /* Secondary on platinum surfaces */
+  .btn-outline {
+    border: 1px solid var(--color-mocha-500);
+    color: var(--color-mocha-800);
+    background: transparent;
+  }
+  .btn-outline:hover:not(:disabled) {
+    border-color: var(--color-lavender-700);
+    color: var(--color-lavender-900);
+    background: var(--color-lavender-50);
+  }
+
+  .btn-danger {
+    border: 1px solid rgb(180 71 47 / 0.5);
+    color: var(--color-danger);
+    background: transparent;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-danger-soft);
+  }
+
+  /* ---------- Form fields on platinum surfaces ---------- */
+  .field {
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--color-silver);
+    background: #fff;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    color: var(--color-mocha-900);
+    color-scheme: light;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .field::placeholder {
+    color: var(--color-silver-600);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-lavender-500);
+    box-shadow: 0 0 0 3px rgb(201 184 236 / 0.55);
+  }
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-mocha-700);
+  }
+  .field-error {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-danger);
+  }
+
+  /* A platinum panel that sits on the mocha background */
+  .panel {
+    border-radius: 1.25rem;
+    background: var(--color-platinum-50);
+    color: var(--color-mocha-900);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.6) inset,
+      0 18px 40px -20px rgb(20 12 8 / 0.7);
+  }
+}
+
+/* The hang-tag hole: shows the mocha page through the tag */
+.tag-hole {
+  position: absolute;
+  top: 0.9rem;
+  left: 50%;
+  width: 0.85rem;
+  height: 0.85rem;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: var(--color-mocha-700);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.45), 0 0 0 3px rgb(185 184 181 / 0.55);
+  z-index: 2;
+}
+
+/* One orchestrated moment: the hero tags settle on page load */
+@keyframes tag-settle {
+  0% {
+    transform: translateY(-14px) rotate(var(--tilt-start));
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(2px) rotate(calc(var(--tilt) * 1.15));
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotate(var(--tilt));
+    opacity: 1;
+  }
+}
+.hero-tag {
+  transform: rotate(var(--tilt));
+  animation: tag-settle 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 @keyframes confetti-burst {
@@ -36,5 +243,15 @@ body {
   100% {
     transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.8);
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

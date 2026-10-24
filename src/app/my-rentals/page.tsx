@@ -11,7 +11,8 @@ import { useToast } from "@/components/ToastProvider";
 import { api, imageSrc, type ApiRental } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useFavoriteIds } from "@/lib/favorites";
-import { categoryIcon, formatDate, formatPrice, toItem, type Item } from "@/lib/types";
+import { formatDate, formatPrice, toItem, type Item } from "@/lib/types";
+import { CalendarDays } from "lucide-react";
 
 type Tab = "rentals" | "requests" | "listings" | "saved";
 const TABS: Tab[] = ["rentals", "requests", "listings", "saved"];
@@ -23,10 +24,8 @@ interface Data {
   allItems: Item[];
 }
 
-const smallButton =
-  "rounded-md px-3 py-1.5 text-xs font-medium transition-transform duration-150 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100";
-const primaryButton = `${smallButton} bg-forest text-paper hover:bg-forest-light`;
-const secondaryButton = `${smallButton} border border-forest text-forest hover:bg-sage`;
+const primaryButton = "btn btn-primary btn-sm";
+const secondaryButton = "btn btn-outline btn-sm";
 
 function RentalRow({
   rental,
@@ -38,30 +37,29 @@ function RentalRow({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-sage-dark bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+    <div className="panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
       <Link href={`/items/${rental.item_id}`} className="group flex flex-1 items-center gap-4">
         <ItemImage
-          item={{
-            title: rental.item_title ?? "Item",
-            coverIcon: categoryIcon(rental.item_category),
-            imageUrl: imageSrc(rental.item_image_url),
-          }}
-          iconClassName="text-3xl"
-          className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sage"
+          title={rental.item_title ?? "Item"}
+          category={rental.item_category}
+          imageUrl={imageSrc(rental.item_image_url)}
+          size="sm"
+          className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl"
         />
         <div className="min-w-0">
-          <p className="font-medium text-forest group-hover:underline">
+          <p className="font-display font-semibold group-hover:underline">
             {rental.item_title ?? `Item #${rental.item_id}`}
           </p>
-          <p className="text-sm text-forest/60">
-            {formatDate(rental.start_date)} – {formatDate(rental.end_date)} ·{" "}
-            {formatPrice(rental.total_price)}
+          <p className="mt-0.5 flex items-center gap-1.5 text-sm text-mocha-600">
+            <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+            {formatDate(rental.start_date)} to {formatDate(rental.end_date)}
+            <span className="font-semibold text-mocha-900">{formatPrice(rental.total_price)}</span>
           </p>
-          <p className="text-xs text-forest/50">
+          <p className="mt-0.5 text-xs text-mocha-500">
             {perspective === "renter"
               ? `From ${rental.owner_name ?? "the owner"}`
               : `Requested by ${rental.renter_name ?? "a student"}`}
-            {rental.handoff_location && ` · Hand-off: ${rental.handoff_location}`}
+            {rental.handoff_location && `, meeting at ${rental.handoff_location}`}
           </p>
         </div>
       </Link>
@@ -199,21 +197,25 @@ function MyRentals() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
-      <h1 className="mb-6 font-serif text-2xl font-semibold text-forest">My Account</h1>
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <h1 className="mb-6 font-display text-3xl font-bold tracking-tight text-platinum sm:text-4xl">My account</h1>
 
-      <div className="mb-6 flex gap-1 overflow-x-auto border-b border-sage-dark">
+      <div role="tablist" className="mb-6 flex w-full gap-1 overflow-x-auto rounded-full bg-mocha-900/60 p-1 ring-1 ring-platinum/10 sm:w-fit">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`relative whitespace-nowrap px-4 py-2 text-sm font-medium ${
-              tab === t ? "border-b-2 border-forest text-forest" : "text-forest/50 hover:text-forest"
+            role="tab"
+            aria-selected={tab === t}
+            className={`relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              tab === t
+                ? "bg-platinum-50 text-mocha-900 shadow-sm"
+                : "text-platinum/65 hover:text-platinum"
             }`}
           >
             {labels[t]} ({counts[t]})
             {t === "requests" && pendingRequests > 0 && (
-              <span className="ml-1.5 rounded-full bg-ink px-1.5 py-0.5 text-[10px] font-bold text-paper">
+              <span className="ml-1.5 rounded-full bg-lavender-200 px-1.5 py-0.5 text-[10px] font-bold text-mocha-900">
                 {pendingRequests} new
               </span>
             )}
@@ -235,7 +237,7 @@ function MyRentals() {
         data.rentals.length === 0 ? (
           <Empty>
             You haven&apos;t rented anything yet.{" "}
-            <Link href="/" className="font-medium text-forest underline">
+            <Link href="/" className="font-semibold text-lavender-200 underline-offset-2 hover:underline">
               Browse items
             </Link>
           </Empty>
@@ -266,7 +268,7 @@ function MyRentals() {
                       {busyId === rental.id ? "Opening Stripe…" : `Pay ${formatPrice(rental.total_price)}`}
                     </button>
                   ) : (
-                    <span className="text-xs text-forest/50">Payments not set up yet</span>
+                    <span className="text-xs text-mocha-500">Payments not set up yet</span>
                   ))}
               </RentalRow>
             ))}
@@ -338,7 +340,7 @@ function MyRentals() {
             tab === "listings" ? (
               <>
                 You haven&apos;t listed anything yet.{" "}
-                <Link href="/list-item" className="font-medium text-forest underline">
+                <Link href="/list-item" className="font-semibold text-lavender-200 underline-offset-2 hover:underline">
                   List an item
                 </Link>
               </>
@@ -354,8 +356,8 @@ function MyRentals() {
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-sage-dark py-20 text-center">
-      <p className="text-forest/70">{children}</p>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-platinum/20 px-6 py-20 text-center">
+      <p className="text-platinum/70">{children}</p>
     </div>
   );
 }
@@ -363,7 +365,7 @@ function Empty({ children }: { children: React.ReactNode }) {
 function ItemGrid({ items, empty }: { items: Item[]; empty: React.ReactNode }) {
   if (items.length === 0) return <Empty>{empty}</Empty>;
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
         <ItemCard key={item.id} item={item} />
       ))}

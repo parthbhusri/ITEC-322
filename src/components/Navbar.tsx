@@ -3,90 +3,72 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { LogIn, LogOut, Menu, Plus, X } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import Logo from "./Logo";
 
 const links = [
   { href: "/", label: "Browse" },
-  { href: "/list-item", label: "List an Item" },
   { href: "/my-rentals", label: "My Rentals" },
   { href: "/admin", label: "Admin" },
 ];
-
-function LoginIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-      aria-hidden="true"
-    >
-      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-      <path d="M10 17l5-5-5-5" />
-      <path d="M15 12H3" />
-    </svg>
-  );
-}
 
 export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, loading, logout } = useAuth();
   const firstName = user?.full_name.split(" ")[0];
+  const initial = firstName?.[0]?.toUpperCase();
+
+  function linkClass(href: string) {
+    const isActive = pathname === href;
+    return isActive
+      ? "rounded-full bg-platinum/10 px-3.5 py-1.5 text-platinum"
+      : "rounded-full px-3.5 py-1.5 text-platinum/65 transition-colors hover:bg-platinum/5 hover:text-platinum";
+  }
 
   return (
-    <nav className="border-b border-sage-dark bg-paper">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4 md:grid md:grid-cols-[1fr_auto_1fr]">
-        <Link
-          href="/"
-          className="font-serif text-xl font-semibold text-forest"
-          onClick={() => setMenuOpen(false)}
-        >
-          Campus Rental Hub
-        </Link>
+    <nav className="sticky top-0 z-40 border-b border-platinum/10 bg-mocha-900/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <Logo onClick={() => setMenuOpen(false)} />
 
-        <div className="hidden items-center gap-6 text-sm font-medium md:flex md:justify-self-center">
-          {links.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={
-                  isActive
-                    ? "text-forest underline decoration-2 underline-offset-4"
-                    : "text-forest/60 hover:text-forest"
-                }
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+        <div className="hidden items-center gap-1 text-sm font-medium md:flex">
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+              {link.label}
+            </Link>
+          ))}
         </div>
 
-        <div className="hidden md:flex md:items-center md:justify-end md:gap-3">
-          {loading ? null : user ? (
-            <>
-              <span className="text-sm text-forest/70">Hi, {firstName}</span>
+        <div className="hidden items-center gap-3 md:flex">
+          <Link href="/list-item" className="btn btn-primary">
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            List an item
+          </Link>
+          {loading ? (
+            <span className="h-9 w-9" />
+          ) : user ? (
+            <div className="flex items-center gap-2">
+              <span
+                title={user.full_name}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-mocha-300 font-display text-sm font-bold text-mocha-950"
+              >
+                {initial}
+              </span>
               <button
                 type="button"
                 onClick={logout}
-                className="rounded-md border border-forest px-3 py-1.5 text-sm font-medium text-forest transition-transform duration-150 hover:scale-105 hover:bg-sage"
+                aria-label="Log out"
+                title="Log out"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-platinum/60 transition-colors hover:bg-platinum/10 hover:text-platinum"
               >
-                Log Out
+                <LogOut className="h-4 w-4" />
               </button>
-            </>
+            </div>
           ) : (
-            <Link
-              href="/login"
-              className="flex items-center gap-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm transition-transform duration-150 hover:scale-105 hover:bg-forest-light hover:shadow-md"
-            >
-              <LoginIcon />
-              Log In
+            <Link href="/login" className="btn btn-ghost">
+              <LogIn className="h-4 w-4" aria-hidden="true" />
+              Log in
             </Link>
           )}
         </div>
@@ -96,55 +78,33 @@ export default function Navbar() {
           onClick={() => setMenuOpen((open) => !open)}
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
-          className="flex h-9 w-9 items-center justify-center rounded-md text-forest hover:bg-sage md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-platinum hover:bg-platinum/10 md:hidden"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-6 w-6"
-            aria-hidden="true"
-          >
-            {menuOpen ? (
-              <>
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </>
-            ) : (
-              <>
-                <path d="M4 6h16" />
-                <path d="M4 12h16" />
-                <path d="M4 18h16" />
-              </>
-            )}
-          </svg>
+          {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
       {menuOpen && (
-        <div className="border-t border-sage-dark px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-4 text-sm font-medium">
-            {links.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className={
-                    isActive
-                      ? "text-forest underline decoration-2 underline-offset-4"
-                      : "text-forest/60 hover:text-forest"
-                  }
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+        <div className="border-t border-platinum/10 px-4 pb-5 pt-3 md:hidden">
+          <div className="flex flex-col gap-1 text-sm font-medium">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className={linkClass(link.href)}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <Link
+              href="/list-item"
+              onClick={() => setMenuOpen(false)}
+              className="btn btn-primary mt-3"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              List an item
+            </Link>
             {user ? (
               <button
                 type="button"
@@ -152,18 +112,19 @@ export default function Navbar() {
                   logout();
                   setMenuOpen(false);
                 }}
-                className="rounded-md border border-forest px-4 py-2 text-sm font-medium text-forest hover:bg-sage"
+                className="btn btn-ghost mt-2"
               >
-                Log Out ({firstName})
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                Log out ({firstName})
               </button>
             ) : (
               <Link
                 href="/login"
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-md bg-forest px-4 py-2 text-sm font-medium text-paper shadow-sm hover:bg-forest-light"
+                className="btn btn-ghost mt-2"
               >
-                <LoginIcon />
-                Log In
+                <LogIn className="h-4 w-4" aria-hidden="true" />
+                Log in
               </Link>
             )}
           </div>

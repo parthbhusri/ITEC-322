@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Lora } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ToastProvider from "@/components/ToastProvider";
@@ -16,27 +16,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const lora = Lora({
-  variable: "--font-lora",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Campus Rental Hub",
-  description: "Peer-to-peer campus textbook & equipment rental hub",
+  description: "Borrow textbooks, calculators and gear from students on your campus.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-paper text-forest">
+      <body className="flex min-h-full flex-col">
         <AuthProvider>
           <ToastProvider>
             <Navbar />
-            <div className="flex flex-1 flex-col">{children}</div>
+            <main className="flex flex-1 flex-col">{children}</main>
             <Footer />
           </ToastProvider>
         </AuthProvider>

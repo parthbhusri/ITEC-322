@@ -1,30 +1,31 @@
-// Rubber-stamp style status badge. Covers item statuses (Available) and
-// rental statuses from the backend (Requested, Approved, Active, ...).
+// Rubber-stamp status badge, used on platinum surfaces. Covers item
+// statuses (Available) and rental statuses (Requested, Approved, Active...).
 
-const FOREST = "#1B4332";
-const RUST = "#B4471F";
-const GREY = "#6B7A6E";
+const LAVENDER = "#5e4b99";
+const MOCHA = "#8a5638";
+const SILVER = "#7d7c79";
+const GREEN = "#3f6b4f";
 
 const STAMP_STYLES: Record<string, { color: string; rotate: string; label?: string }> = {
-  Available: { color: FOREST, rotate: "-3deg" },
-  Requested: { color: RUST, rotate: "2deg" },
-  Approved: { color: FOREST, rotate: "-2deg" },
-  Active: { color: RUST, rotate: "-2deg", label: "Rented" },
-  Rented: { color: RUST, rotate: "-2deg" },
-  Completed: { color: GREY, rotate: "3deg", label: "Returned" },
-  Returned: { color: GREY, rotate: "3deg" },
-  Rejected: { color: GREY, rotate: "2deg" },
-  Cancelled: { color: GREY, rotate: "-3deg" },
-  Paid: { color: FOREST, rotate: "2deg" },
-  Unpaid: { color: RUST, rotate: "-2deg" },
+  Available: { color: LAVENDER, rotate: "-3deg" },
+  Requested: { color: MOCHA, rotate: "2deg" },
+  Approved: { color: GREEN, rotate: "-2deg" },
+  Active: { color: MOCHA, rotate: "-2deg", label: "Rented" },
+  Rented: { color: MOCHA, rotate: "-2deg" },
+  Completed: { color: SILVER, rotate: "3deg", label: "Returned" },
+  Returned: { color: SILVER, rotate: "3deg" },
+  Rejected: { color: SILVER, rotate: "2deg" },
+  Cancelled: { color: SILVER, rotate: "-3deg" },
+  Paid: { color: GREEN, rotate: "2deg" },
+  Unpaid: { color: MOCHA, rotate: "-2deg" },
 };
 
 export default function StampBadge({ status }: { status: string }) {
-  const { color, rotate, label } = STAMP_STYLES[status] ?? { color: GREY, rotate: "0deg" };
+  const { color, rotate, label } = STAMP_STYLES[status] ?? { color: SILVER, rotate: "0deg" };
 
   return (
     <span
-      className="inline-block select-none whitespace-nowrap rounded-sm border-2 border-dashed px-2.5 py-1 font-mono text-xs font-bold tracking-widest uppercase"
+      className="inline-block select-none whitespace-nowrap rounded-[5px] border-2 border-dashed px-2 py-0.5 font-display text-[0.7rem] font-extrabold tracking-[0.14em] uppercase"
       style={{ color, borderColor: color, transform: `rotate(${rotate})` }}
     >
       {label ?? status}
