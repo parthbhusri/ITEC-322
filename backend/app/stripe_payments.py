@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Item, Rental, User
-from app.origins import is_local_frontend
+from app.origins import deployed_frontends, is_allowed_frontend
 
 
 # ==================================================
@@ -34,10 +34,8 @@ STRIPE_WEBHOOK_SECRET = os.getenv(
     "STRIPE_WEBHOOK_SECRET", ""
 ).strip()
 
-FRONTEND_URL = os.getenv(
-    "FRONTEND_URL",
-    "http://localhost:3000",
-).strip().rstrip("/")
+# Where to send students after paying if their own address isn't known
+FRONTEND_URL = (deployed_frontends() or ["http://localhost:3000"])[0]
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -138,7 +136,7 @@ def create_checkout_session(
     # Send the student back to the address they paid from (e.g. their
     # phone on the same Wi-Fi), otherwise to FRONTEND_URL
     origin = request.headers.get("origin")
-    return_url = origin if is_local_frontend(origin) else FRONTEND_URL
+    return_url = origin if is_allowed_frontend(origin) else FRONTEND_URL
 
     # Create Stripe Checkout session
     try:

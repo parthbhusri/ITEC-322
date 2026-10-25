@@ -2,14 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { LogoMark } from "./Logo";
 
 export function Loading({ label = "Loading…" }: { label?: string }) {
+  // The free hosting plan puts the server to sleep when nobody's using it;
+  // if loading takes a while, say why instead of looking stuck
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSlow(true), 5000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="flex flex-1 items-center justify-center gap-2 py-20 text-sm text-platinum/60">
-      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-      <span>{label}</span>
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 py-20 text-center text-sm text-platinum/60">
+      <span className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        <span>{label}</span>
+      </span>
+      {slow && (
+        <span role="status" className="max-w-xs text-xs text-platinum/45">
+          The server is waking up after a quiet spell. This can take up to a minute the first time.
+        </span>
+      )}
     </div>
   );
 }

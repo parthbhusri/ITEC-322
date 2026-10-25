@@ -131,9 +131,9 @@ export default function BrowsePage() {
   return (
     <div className="flex flex-1 flex-col">
       {/* ---------- Hero ---------- */}
-      <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-10 pt-12 sm:px-6 md:pt-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-        <div>
-          <h1 className="max-w-xl font-display text-4xl font-bold leading-[1.05] tracking-tight text-platinum sm:text-5xl lg:text-[3.5rem]">
+      <section className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 pb-10 pt-12 sm:px-6 md:pt-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+        <div className="min-w-0">
+          <h1 className="max-w-xl break-words font-display text-4xl font-bold leading-[1.05] tracking-tight text-platinum sm:text-5xl lg:text-[3.5rem]">
             Borrow it from someone on your campus.
           </h1>
           <p className="mt-5 max-w-lg text-base leading-relaxed text-platinum/70 sm:text-lg">

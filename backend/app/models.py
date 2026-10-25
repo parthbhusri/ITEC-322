@@ -12,6 +12,7 @@ from sqlalchemy import (
     Numeric,
     Date,
     DateTime,
+    LargeBinary,
 )
 
 from sqlalchemy.orm import relationship
@@ -340,3 +341,25 @@ class Review(Base):
             return "renter"
         return "owner"
 
+
+
+
+# ==========================================
+# ITEM IMAGE MODEL
+# --------------------------------------------------
+# Uploaded photos live in the database so they
+# survive server restarts on free hosting.
+# ==========================================
+
+class ItemImage(Base):
+    __tablename__ = "item_images"
+
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False, index=True)
+    content = Column(LargeBinary, nullable=False)
+    content_type = Column(String(50), nullable=False, default="image/jpeg")
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )

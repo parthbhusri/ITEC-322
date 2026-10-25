@@ -21,7 +21,7 @@ export default function AuthShell({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 items-center px-4 py-10 sm:px-6">
-      <div className="panel grid w-full overflow-hidden md:grid-cols-[0.9fr_1.1fr]">
+      <div className="panel grid w-full grid-cols-1 overflow-hidden md:grid-cols-[0.9fr_1.1fr]">
         <div className="relative hidden flex-col justify-between gap-10 overflow-hidden bg-mocha-900 p-10 text-platinum md:flex">
           <div
             className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-lavender-200/15 blur-3xl"

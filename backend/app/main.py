@@ -1,10 +1,10 @@
 
 from pathlib import Path
 from io import BytesIO
-from uuid import uuid4
 
 from fastapi import (
     FastAPI,
+    Response,
     Depends,
     HTTPException,
     UploadFile,
@@ -22,7 +22,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.database import Base, engine, get_db
 from app import models
-from app.models import Item, Rental, User
+from app.models import Item, ItemImage, Rental, User
 from app.schemas import ItemCreate, ItemResponse, ItemUpdate
 from app.auth import router as auth_router, get_current_user
 from app.rentals import router as rentals_router
@@ -30,7 +30,7 @@ from app.stripe_payments import router as stripe_payments_router
 from app.admin import router as admin_router
 from app.community import router as community_router
 from app.listings import remove_item
-from app.origins import LOCAL_FRONTEND_ORIGIN
+from app.origins import LOCAL_FRONTEND_ORIGIN, deployed_frontends
 
 
 # ==========================================
@@ -57,6 +57,9 @@ app.add_middleware(
     # device on the same Wi-Fi (private 192.168.x.x / 10.x.x.x /
     # 172.16-31.x.x addresses), on port 3000 or 3001
     allow_origin_regex=LOCAL_FRONTEND_ORIGIN,
+    # Plus the live website, e.g. https://campus-rental-hub.vercel.app
+    # (set FRONTEND_URL; separate several with commas)
+    allow_origins=deployed_frontends(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -324,39 +327,41 @@ async def upload_item_image(
             detail="Invalid or unsupported image file.",
         )
 
-    filename = f"{uuid4().hex}.jpg"
-    file_path = UPLOAD_DIR / filename
-
-    try:
-        file_path.write_bytes(output.getvalue())
-
-    except OSError:
-        raise HTTPException(
-            status_code=500,
-            detail="Unable to save image file.",
-        )
-
+    # Photos are stored in the database (not on disk), because hosts like
+    # Render's free plan wipe the disk whenever the server restarts.
     previous_image = item.image_url
-    item.image_url = f"/uploads/{filename}"
+    photo = ItemImage(
+        item_id=item.id,
+        content=output.getvalue(),
+        content_type="image/jpeg",
+    )
+    db.add(photo)
 
     try:
+        db.flush()
+        item.image_url = f"/api/images/{photo.id}"
+
+        # Replace the old photo rather than keeping both
+        if previous_image and previous_image.startswith("/api/images/"):
+            old_id = previous_image.rsplit("/", 1)[-1]
+            if old_id.isdigit():
+                old = db.get(ItemImage, int(old_id))
+                if old is not None and old.item_id == item.id:
+                    db.delete(old)
+
         db.commit()
         db.refresh(item)
 
     except SQLAlchemyError:
         db.rollback()
-        file_path.unlink(missing_ok=True)
-
         raise HTTPException(
             status_code=500,
-            detail="Unable to save image information.",
+            detail="Unable to save image.",
         )
 
+    # Tidy up a photo saved on disk by an older version
     if previous_image and previous_image.startswith("/uploads/"):
-        previous_path = UPLOAD_DIR / Path(previous_image).name
-
-        if previous_path != file_path:
-            previous_path.unlink(missing_ok=True)
+        (UPLOAD_DIR / Path(previous_image).name).unlink(missing_ok=True)
 
     return item
 
@@ -468,3 +473,23 @@ def delete_item(
 ):
     item = get_owned_item(item_id, db, current_user)
     remove_item(item, db)
+
+
+
+# ==========================================
+# SERVE A PRODUCT PHOTO
+# ==========================================
+
+@app.get("/api/images/{image_id}")
+def get_image(image_id: int, db: Session = Depends(get_db)):
+    photo = db.get(ItemImage, image_id)
+
+    if photo is None:
+        raise HTTPException(status_code=404, detail="Image not found.")
+
+    # Each upload gets a new id, so browsers can cache it for good
+    return Response(
+        content=photo.content,
+        media_type=photo.content_type,
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )

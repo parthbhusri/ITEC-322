@@ -90,6 +90,41 @@ and any CVC. When the student returns, the app confirms the payment with Stripe,
 the Stripe CLI webhook is not required for local testing. Without a key, everything
 except paying works.
 
+## Putting it online (free)
+
+The website goes on **Vercel**, the backend on **Render**, and the database stays
+on **Neon**. Sign in to Vercel and Render with your GitHub account.
+
+**1. Backend on Render**
+1. Render dashboard → **New** → **Blueprint** → pick this repository.
+   Render reads `render.yaml` and sets everything up.
+2. When asked, fill in:
+   - `DATABASE_URL`: the same value as in your `backend/.env`
+   - `STRIPE_SECRET_KEY`: your `sk_test_...` key (or leave blank)
+   - `FRONTEND_URL`: leave blank for now
+3. Click **Apply** and wait for the deploy to finish (3–5 minutes). Copy the
+   service address, e.g. `https://campus-rental-hub-api.onrender.com`, and check
+   `.../api/health` shows `healthy`.
+
+**2. Website on Vercel**
+1. Vercel dashboard → **Add New** → **Project** → import this repository.
+2. Under **Environment Variables**, add `NEXT_PUBLIC_API_URL` = your Render
+   address from step 1 (no slash at the end).
+3. Click **Deploy**. Copy the site address, e.g. `https://itec-322.vercel.app`.
+
+**3. Connect them**
+On Render → your service → **Environment**, set `FRONTEND_URL` to the Vercel
+address and save (Render redeploys by itself). Open the Vercel link; done.
+
+Every `git push` to `main` updates both automatically.
+
+**Good to know**
+- Render's free plan sleeps after 15 minutes without visitors; the next visit
+  takes up to a minute while it wakes up (the site says so while loading).
+- Uploaded photos are stored in the database, so they survive those restarts.
+- To make yourself admin on the live site, run `python make_admin.py you@...`
+  on your laptop. It changes the shared Neon database, so it applies everywhere.
+
 ## How a rental works
 
 1. A student registers (university + campus are saved to their profile) and logs in.
@@ -165,5 +200,7 @@ backend/
   app/              FastAPI app: auth, items, rentals, Stripe payments, models
   seed_products.py  Sample items + demo owner
   make_admin.py     Give or remove admin access
+render.yaml         How Render runs the backend
+.vercelignore       Keeps the backend out of the Vercel upload
   .env.example      Settings the API reads
 ```

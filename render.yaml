@@ -1,0 +1,28 @@
+# Render blueprint: runs the FastAPI backend from the backend/ folder.
+# Render reads this when you choose New > Blueprint and pick this repo.
+services:
+  - type: web
+    name: campus-rental-hub-api
+    runtime: python
+    plan: free
+    # Same AWS region as the Neon database (US East, Ohio), so every
+    # database query stays fast
+    region: ohio
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      # Asked for when you create the blueprint: paste the same values
+      # as in your backend/.env file
+      - key: DATABASE_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      # The live website address, e.g. https://campus-rental-hub.vercel.app
+      # (fill in after the website is on Vercel)
+      - key: FRONTEND_URL
+        sync: false
+      # Render creates a long random secret for login tokens
+      - key: JWT_SECRET_KEY
+        generateValue: true
