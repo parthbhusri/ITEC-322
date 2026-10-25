@@ -30,6 +30,7 @@ from app.stripe_payments import router as stripe_payments_router
 from app.admin import router as admin_router
 from app.community import router as community_router
 from app.listings import remove_item
+from app.origins import LOCAL_FRONTEND_ORIGIN
 
 
 # ==========================================
@@ -52,12 +53,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-    ],
+    # The website on this computer (localhost) or opened from another
+    # device on the same Wi-Fi (private 192.168.x.x / 10.x.x.x /
+    # 172.16-31.x.x addresses), on port 3000 or 3001
+    allow_origin_regex=LOCAL_FRONTEND_ORIGIN,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

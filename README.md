@@ -44,6 +44,23 @@ Open <http://localhost:3000>. The frontend talks to `http://localhost:8000` by
 default; to use a different address, copy `.env.example` to `.env.local` and change
 `NEXT_PUBLIC_API_URL`.
 
+### Open it on your phone (same Wi-Fi)
+
+1. Start the backend so other devices can reach it (note `--host 0.0.0.0`):
+   ```bash
+   python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+   ```
+2. Start the website as usual with `npm run dev`. It prints a **Network** address,
+   e.g. `http://192.168.1.20:3000`.
+3. On your phone (connected to the **same Wi-Fi**), open that Network address.
+4. On Windows, if it doesn't load, allow **Python** and **Node.js** through the
+   firewall on **Private networks** (Windows usually asks the first time).
+
+The site finds the backend automatically on the same computer, and the backend
+accepts requests from home/uni network addresses (`192.168.x.x`, `10.x.x.x`,
+`172.16–31.x.x`). Some uni and public Wi-Fi networks block devices from
+talking to each other; use a phone hotspot or home Wi-Fi instead.
+
 ### Demo accounts
 
 - **Demo Owner** (owns the 40 sample items): `demo.owner@example.com` / `DemoOwner123!`

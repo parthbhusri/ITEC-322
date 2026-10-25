@@ -2,8 +2,15 @@
 // All requests go through `apiFetch`, which adds the login token and turns
 // error responses into readable messages.
 
+// The backend runs on port 8000 of the same computer that serves this
+// site. Using the page's own hostname (not "localhost") means it also
+// works from a phone on the same Wi-Fi, e.g. http://192.168.1.20:3000.
+// Set NEXT_PUBLIC_API_URL to override (e.g. when the API is hosted online).
 export const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+  process.env.NEXT_PUBLIC_API_URL ??
+  (typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : "http://localhost:8000")
 ).replace(/\/$/, "");
 
 const TOKEN_KEY = "campus-rental-hub:token";

@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Item, Rental, User
+from app.origins import is_local_frontend
 
 
 # ==================================================
@@ -63,6 +64,7 @@ def to_cents(amount):
 @router.post("/checkout/{rental_id}")
 def create_checkout_session(
     rental_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -133,6 +135,11 @@ def create_checkout_session(
     # Create Stripe Checkout session
     
    
+    # Send the student back to the address they paid from (e.g. their
+    # phone on the same Wi-Fi), otherwise to FRONTEND_URL
+    origin = request.headers.get("origin")
+    return_url = origin if is_local_frontend(origin) else FRONTEND_URL
+
     # Create Stripe Checkout session
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -163,12 +170,12 @@ def create_checkout_session(
                 }
             },
             success_url=(
-                f"{FRONTEND_URL}/my-rentals"
+                f"{return_url}/my-rentals"
                 "?payment=success"
                 "&session_id={CHECKOUT_SESSION_ID}"
             ),
             cancel_url=(
-                f"{FRONTEND_URL}/my-rentals"
+                f"{return_url}/my-rentals"
                 "?payment=cancelled"
             ),
         )
