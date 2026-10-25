@@ -2,8 +2,11 @@
 from pathlib import Path
 from io import BytesIO
 
+import logging
+
 from fastapi import (
     FastAPI,
+    Request,
     Response,
     Depends,
     HTTPException,
@@ -12,6 +15,7 @@ from fastapi import (
     status,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from sqlalchemy import select
@@ -33,6 +37,9 @@ from app.listings import remove_item
 from app.origins import LOCAL_FRONTEND_ORIGIN, deployed_frontends
 
 
+logger = logging.getLogger("uvicorn.error")
+
+
 # ==========================================
 # FASTAPI APPLICATION
 # ==========================================
@@ -45,6 +52,26 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+
+
+# ==========================================
+# UNEXPECTED ERRORS
+# --------------------------------------------------
+# Turn a crash into a normal 500 response *inside*
+# the CORS layer, so the browser can read it. Without
+# this, the website only sees "can't reach the server".
+# ==========================================
+
+@app.middleware("http")
+async def report_unexpected_errors(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception:
+        logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "The server ran into a problem. Please try again."},
+        )
 
 
 # ==========================================
@@ -64,6 +91,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Shows up in the server log on start-up, to make setup problems easy to spot
+logger.info("Live website address(es) allowed: %s", deployed_frontends() or "none set (FRONTEND_URL is empty)")
 
 
 # ==========================================
