@@ -22,11 +22,14 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.database import Base, engine, get_db
 from app import models
-from app.models import Item, User
-from app.schemas import ItemCreate, ItemResponse
+from app.models import Item, Rental, User
+from app.schemas import ItemCreate, ItemResponse, ItemUpdate
 from app.auth import router as auth_router, get_current_user
 from app.rentals import router as rentals_router
 from app.stripe_payments import router as stripe_payments_router
+from app.admin import router as admin_router
+from app.community import router as community_router
+from app.listings import remove_item
 
 
 # ==========================================
@@ -99,6 +102,8 @@ Base.metadata.create_all(bind=engine)
 app.include_router(auth_router)
 app.include_router(rentals_router)
 app.include_router(stripe_payments_router)
+app.include_router(admin_router)
+app.include_router(community_router)
 
 
 # ==========================================
@@ -137,8 +142,12 @@ def health_check():
 def get_items(
     db: Session = Depends(get_db),
 ):
+    # Removed listings stay in the database (old rentals point to them)
+    # but are hidden from browsing
     items = db.scalars(
-        select(Item).order_by(Item.id.desc())
+        select(Item)
+        .where(Item.status != "Removed")
+        .order_by(Item.id.desc())
     ).all()
 
     return items
@@ -158,7 +167,10 @@ def get_my_items(
 ):
     items = db.scalars(
         select(Item)
-        .where(Item.owner_id == current_user.id)
+        .where(
+            Item.owner_id == current_user.id,
+            Item.status != "Removed",
+        )
         .order_by(Item.id.desc())
     ).all()
 
@@ -373,3 +385,87 @@ def get_item(
         )
 
     return item
+
+
+
+def get_owned_item(item_id: int, db: Session, current_user: User) -> Item:
+    item = db.get(Item, item_id)
+
+    if item is None or item.status == "Removed":
+        raise HTTPException(status_code=404, detail="Item not found.")
+
+    if item.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the owner can change this listing.",
+        )
+
+    return item
+
+
+# ==========================================
+# EDIT A LISTING
+# ==========================================
+
+@app.patch(
+    "/api/items/{item_id}",
+    response_model=ItemResponse,
+)
+def update_item(
+    item_id: int,
+    item_data: ItemUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    item = get_owned_item(item_id, db, current_user)
+    updates = item_data.model_dump(exclude_unset=True)
+
+    for field in ("title", "category", "condition"):
+        if field in updates:
+            value = (updates[field] or "").strip()
+            if not value:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{field.capitalize()} cannot be empty.",
+                )
+            setattr(item, field, value)
+
+    for field in ("description", "isbn", "pickup_location"):
+        if field in updates:
+            value = updates[field]
+            setattr(item, field, value.strip() if value and value.strip() else None)
+
+    if updates.get("price_per_day") is not None:
+        item.price_per_day = updates["price_per_day"]
+
+    if updates.get("status") is not None:
+        item.status = updates["status"]
+
+    try:
+        db.commit()
+        db.refresh(item)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to update listing.",
+        )
+
+    return item
+
+
+# ==========================================
+# DELETE A LISTING
+# ==========================================
+
+@app.delete(
+    "/api/items/{item_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    item = get_owned_item(item_id, db, current_user)
+    remove_item(item, db)

@@ -2,7 +2,9 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import (
+    CheckConstraint,
     Column,
+    UniqueConstraint,
     Integer,
     String,
     Boolean,
@@ -257,4 +259,84 @@ class Rental(Base):
     @property
     def renter_name(self):
         return self.renter.full_name if self.renter else None
+
+    @property
+    def owner_id(self):
+        return self.item.owner_id if self.item else None
+
+    # Reviews written about this rental (at most one each way)
+    reviews = relationship("Review", back_populates="rental")
+
+    @property
+    def renter_reviewed(self):
+        return any(r.reviewer_id == self.renter_id for r in self.reviews)
+
+    @property
+    def owner_reviewed(self):
+        owner_id = self.owner_id
+        return any(r.reviewer_id == owner_id for r in self.reviews)
+
+
+# ==========================================
+# FAVORITE MODEL (saved items, per account)
+# ==========================================
+
+class Favorite(Base):
+    __tablename__ = "favorites"
+    __table_args__ = (
+        UniqueConstraint("user_id", "item_id", name="uq_favorite_user_item"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+
+# ==========================================
+# REVIEW MODEL
+# --------------------------------------------------
+# After a rental is completed, the renter and the
+# owner can each rate the other once (1 to 5 stars).
+# ==========================================
+
+class Review(Base):
+    __tablename__ = "reviews"
+    __table_args__ = (
+        UniqueConstraint("rental_id", "reviewer_id", name="uq_review_rental_reviewer"),
+        CheckConstraint("rating BETWEEN 1 AND 5", name="ck_review_rating"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    rental_id = Column(Integer, ForeignKey("rentals.id"), nullable=False, index=True)
+    reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reviewee_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    rating = Column(Integer, nullable=False)
+    comment = Column(String(500), nullable=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    rental = relationship("Rental", back_populates="reviews")
+    reviewer = relationship("User", foreign_keys=[reviewer_id])
+
+    @property
+    def reviewer_name(self):
+        return self.reviewer.full_name if self.reviewer else None
+
+    @property
+    def item_title(self):
+        return self.rental.item_title if self.rental else None
+
+    @property
+    def reviewer_role(self):
+        if self.rental is not None and self.reviewer_id == self.rental.renter_id:
+            return "renter"
+        return "owner"
 

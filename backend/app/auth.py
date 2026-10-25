@@ -21,7 +21,8 @@ from app.schemas import (
     UserRegister,
     UserResponse,
     UserLogin,
-    UserProfileUpdate
+    UserProfileUpdate,
+    PasswordChange
 )
 
 from app.security import (
@@ -257,3 +258,60 @@ def update_my_profile(
         )
 
     return current_user
+
+
+
+# ==========================================
+# ADMIN-ONLY ACCESS
+# ==========================================
+
+def require_admin(
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admins only"
+        )
+
+    return current_user
+
+
+# ==========================================
+# CHANGE PASSWORD
+# ==========================================
+
+@router.post("/change-password")
+def change_password(
+    data: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not verify_password(
+        data.current_password,
+        current_user.password_hash
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+
+    if data.new_password == data.current_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current one"
+        )
+
+    current_user.password_hash = hash_password(data.new_password)
+
+    try:
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to change password"
+        )
+
+    return {"message": "Password changed"}
