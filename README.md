@@ -1,5 +1,9 @@
 # Campus Rental Hub
 
+**Live site:** https://itec-322.vercel.app
+(API: https://campus-rental-hub-api.onrender.com; the free server sleeps when
+unused, so the first visit can take up to a minute)
+
 A peer-to-peer rental marketplace for students — textbooks, calculators, lab
 equipment, and tools, borrowed and returned right on campus.
 
