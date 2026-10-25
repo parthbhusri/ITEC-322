@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- photos come from the API server */
-import { createElement } from "react";
+"use client";
+
+import { createElement, useState } from "react";
 import { itemIcon, itemTint } from "@/lib/itemArt";
 
 // Shows the item's uploaded photo, or a picture of what the item is
@@ -17,10 +19,19 @@ export default function ItemImage({
   size?: "sm" | "lg" | "xl";
   className?: string;
 }) {
-  if (imageUrl) {
+  // If a photo can't be loaded (e.g. it was saved on a laptop that isn't
+  // the live server), show the item's picture instead of a broken image
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
+  if (imageUrl && failedUrl !== imageUrl) {
     return (
       <div className={className}>
-        <img src={imageUrl} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={imageUrl}
+          alt={title}
+          onError={() => setFailedUrl(imageUrl)}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       </div>
     );
   }
