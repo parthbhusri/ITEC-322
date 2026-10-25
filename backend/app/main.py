@@ -34,7 +34,7 @@ from app.stripe_payments import router as stripe_payments_router
 from app.admin import router as admin_router
 from app.community import router as community_router
 from app.listings import remove_item
-from app.origins import LOCAL_FRONTEND_ORIGIN, deployed_frontends
+from app.origins import allowed_origin_regex, deployed_frontends, is_allowed_frontend
 
 
 logger = logging.getLogger("uvicorn.error")
@@ -80,13 +80,11 @@ async def report_unexpected_errors(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    # The website on this computer (localhost) or opened from another
-    # device on the same Wi-Fi (private 192.168.x.x / 10.x.x.x /
-    # 172.16-31.x.x addresses), on port 3000 or 3001
-    allow_origin_regex=LOCAL_FRONTEND_ORIGIN,
-    # Plus the live website, e.g. https://campus-rental-hub.vercel.app
-    # (set FRONTEND_URL; separate several with commas)
-    allow_origins=deployed_frontends(),
+    # Allowed: the website on this computer (localhost), from another
+    # device on the same Wi-Fi (192.168.x.x / 10.x.x.x / 172.16-31.x.x on
+    # port 3000 or 3001), and the live website from FRONTEND_URL
+    # (comma separated, '*' allowed, e.g. https://itec-322-*.vercel.app)
+    allow_origin_regex=allowed_origin_regex(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,6 +92,20 @@ app.add_middleware(
 
 # Shows up in the server log on start-up, to make setup problems easy to spot
 logger.info("Live website address(es) allowed: %s", deployed_frontends() or "none set (FRONTEND_URL is empty)")
+
+
+@app.middleware("http")
+async def log_refused_websites(request: Request, call_next):
+    """Log the exact address of any website the CORS rules turn away."""
+    origin = request.headers.get("origin")
+    if origin and not is_allowed_frontend(origin):
+        logger.warning(
+            "Refused a request from website %s. To allow it, add it to "
+            "FRONTEND_URL (currently: %s)",
+            origin,
+            ", ".join(deployed_frontends()) or "empty",
+        )
+    return await call_next(request)
 
 
 # ==========================================

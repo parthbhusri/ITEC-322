@@ -19,7 +19,8 @@ services:
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
-      # The live website address, e.g. https://campus-rental-hub.vercel.app
+      # The live website address(es), comma separated; '*' matches one part,
+      # e.g. https://itec-322.vercel.app,https://itec-322-*-parth-ebfa.vercel.app
       # (fill in after the website is on Vercel)
       - key: FRONTEND_URL
         sync: false
