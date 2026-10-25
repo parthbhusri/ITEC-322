@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
-import { FAVORITES_EVENT, isFavorite, toggleFavorite } from "@/lib/favorites";
+import { toggleFavorite, useIsFavorite } from "@/lib/favorites";
 
 export default function FavoriteButton({
   itemId,
@@ -11,20 +10,7 @@ export default function FavoriteButton({
   itemId: string;
   className?: string;
 }) {
-  const [favorited, setFavorited] = useState(false);
-
-  useEffect(() => {
-    setFavorited(isFavorite(itemId));
-    function handleChange() {
-      setFavorited(isFavorite(itemId));
-    }
-    window.addEventListener(FAVORITES_EVENT, handleChange);
-    window.addEventListener("storage", handleChange);
-    return () => {
-      window.removeEventListener(FAVORITES_EVENT, handleChange);
-      window.removeEventListener("storage", handleChange);
-    };
-  }, [itemId]);
+  const favorited = useIsFavorite(itemId);
 
   return (
     <button

@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 import type { CSSProperties } from "react";
 
 const EMOJIS = ["🎉", "✨", "🎊", "⭐"];
 const PARTICLE_COUNT = 16;
 
 export default function ConfettiBurst() {
-  const particles = useMemo(() => {
+  // Random positions are picked once, when the burst first appears
+  const [particles] = useState(() => {
     return Array.from({ length: PARTICLE_COUNT }, (_, i) => {
       const angle = (Math.PI * 2 * i) / PARTICLE_COUNT + Math.random() * 0.4;
       const distance = 70 + Math.random() * 60;
@@ -26,7 +27,7 @@ export default function ConfettiBurst() {
         } as CSSProperties,
       };
     });
-  }, []);
+  });
 
   return (
     <div

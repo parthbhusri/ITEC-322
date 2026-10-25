@@ -48,7 +48,21 @@ default; to use a different address, copy `.env.example` to `.env.local` and cha
 
 - **Demo Owner** (owns the 40 sample items): `demo.owner@example.com` / `DemoOwner123!`
   Log in as this account to approve, hand over and complete rentals of sample items.
-- **Students**: register with any email ending in `.edu` or `.edu.au`.
+- **Students**: register with any email ending in `.edu` or `.edu.au`. The server
+  rejects any other email, even if someone bypasses the Register page.
+
+### Admin access
+
+Register on the website first, then from the `backend` folder (virtual environment
+active) run:
+
+```bash
+python make_admin.py you@university.edu.au            # give admin access
+python make_admin.py you@university.edu.au --remove   # take it away
+```
+
+Log out and back in. An **Admin** link appears in the navbar; nobody else can see
+or open the dashboard.
 
 ### Payments (optional)
 
@@ -68,18 +82,25 @@ except paying works.
    Overlapping bookings for the same item are blocked by the backend.
 4. Once approved, the renter pays from **My Rentals** (Stripe Checkout, test mode).
 5. The owner marks the item **handed over**, then **returned** when it comes back.
-6. A renter can cancel a request while it's still waiting for approval.
+6. Once it's returned, the renter and the owner can **rate each other** (1–5 stars
+   plus an optional comment). Ratings show on the owner's listings and profiles.
+7. A renter can cancel a request while it's still waiting for approval.
+
+A **badge on My Rentals** in the navbar counts what needs your attention: requests
+to approve, approved rentals to pay, and reviews to write.
 
 ## Pages
 
 | Page | Route | What it does |
 |---|---|---|
 | Browse | `/` | Live items from the API; search, category filter, "available only", sort by price |
-| Item detail | `/items/[id]` | Item info and photo; owners can add/change the photo |
+| Item detail | `/items/[id]` | Item info and photo, the owner's rating and reviews; owners can change the photo |
+| Edit listing | `/items/[id]/edit` | Owners change details or price, pause the listing, or delete it |
 | List an item | `/list-item` | Create a listing with optional photo; ISBN lookup via Open Library |
 | Request to rent | `/checkout/[id]` | Pick dates and hand-off spot, see the total, send the request |
-| My Account | `/my-rentals` | Tabs: my rentals (cancel/pay), requests on my items (approve/reject/hand over/return), my listings, saved |
-| Admin | `/admin` | Listing stats and latest listings from the API |
+| My Account | `/my-rentals` | Tabs: my rentals (cancel / pay / review), requests on my items (approve / reject / hand over / return / review), my listings (edit), saved |
+| Profile | `/profile` | Edit name, university and campus; change password; reviews about you |
+| Admin | `/admin` | **Admins only.** Site stats, all users (never passwords), all rentals, remove any listing |
 | Log in / Register | `/login`, `/register` | Real accounts with JWT login (expires after 30 minutes) |
 
 ## Design
@@ -101,12 +122,14 @@ except paying works.
 
 ## Known gaps
 
-- **Admin**: there is no admin-only API yet, so the dashboard shows listing stats only
-  (not rentals across all users) and the page is open to anyone.
-- **Saved items** are stored in the browser (`localStorage`), not on the account.
-- **Email verification**: the `.edu` / `.edu.au` check is client-side only; no
-  verification email is sent.
-- No editing or deleting listings, no notifications to owners, no automated tests yet.
+- **Email verification:** student emails are checked by their ending (`.edu` /
+  `.edu.au`), but no verification email is sent.
+- **Forgot password:** there's no reset-by-email yet; logged-in users can change
+  their password on the Profile page.
+- **Notifications** are in-app only (the navbar badge), not email.
+- Deleting a listing hides it rather than erasing it, so past rentals still show
+  what was rented. Admins can remove a listing even while it's booked; owners can't.
+- No automated test suite in the repo yet.
 
 ## Project structure
 
@@ -118,9 +141,12 @@ src/
     api.ts          Typed client for every backend endpoint + login token storage
     auth.tsx        Login state shared across the app (useAuth)
     types.ts        UI item type, converters, categories, price/date helpers
-    favorites.ts    Saved items (browser-only)
+    favorites.ts    Saved items (on the account when logged in, browser otherwise)
+    notifications.ts  Navbar badge: what needs the user's attention
+    itemArt.ts      Picks a picture for items without a photo
 backend/
   app/              FastAPI app: auth, items, rentals, Stripe payments, models
   seed_products.py  Sample items + demo owner
+  make_admin.py     Give or remove admin access
   .env.example      Settings the API reads
 ```

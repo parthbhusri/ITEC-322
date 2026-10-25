@@ -1,12 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+import { api } from "./api";
+
+// Saved items.
+// - Logged in: stored on the account (backend /api/favorites), so they
+//   follow the student to any device.
+// - Logged out: kept in this browser, and moved onto the account the
+//   next time they log in.
 
 const STORAGE_KEY = "campus-rental-hub:favorites";
-export const FAVORITES_EVENT = "favorites-changed";
+const EMPTY: Set<string> = new Set();
 
-function readFavorites(): Set<string> {
-  if (typeof window === "undefined") return new Set();
+let ids: Set<string> = EMPTY;
+let onAccount = false;
+let started = false;
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const listener of listeners) listener();
+}
+
+function setIds(next: Set<string>) {
+  ids = next;
+  emit();
+}
+
+function readLocal(): Set<string> {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     return new Set(raw ? (JSON.parse(raw) as string[]) : []);
@@ -15,40 +35,97 @@ function readFavorites(): Set<string> {
   }
 }
 
-export function getFavoriteIds(): Set<string> {
-  return readFavorites();
-}
-
-export function isFavorite(id: string): boolean {
-  return readFavorites().has(id);
-}
-
-export function toggleFavorite(id: string) {
-  const ids = readFavorites();
-  if (ids.has(id)) {
-    ids.delete(id);
-  } else {
-    ids.add(id);
+function writeLocal(next: Set<string>) {
+  try {
+    if (next.size === 0) window.localStorage.removeItem(STORAGE_KEY);
+    else window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+  } catch {
+    // Storage blocked (private mode): keep them in memory only
   }
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-  window.dispatchEvent(new Event(FAVORITES_EVENT));
+}
+
+function start() {
+  if (started || typeof window === "undefined") return;
+  started = true;
+  ids = readLocal();
+  // Keep other tabs in step while logged out
+  window.addEventListener("storage", (e) => {
+    if (!onAccount && e.key === STORAGE_KEY) setIds(readLocal());
+  });
+}
+
+function subscribe(listener: () => void) {
+  start();
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/** Called by the login state whenever someone logs in or out. */
+export async function syncFavoritesWithAccount(loggedIn: boolean) {
+  start();
+  if (!loggedIn) {
+    onAccount = false;
+    setIds(readLocal());
+    return;
+  }
+
+  try {
+    const local = readLocal();
+    const saved = new Set((await api.favorites()).map(String));
+    // Move anything saved while logged out onto the account
+    await Promise.all(
+      [...local]
+        .filter((id) => !saved.has(id))
+        .map((id) =>
+          api
+            .addFavorite(id)
+            .then(() => saved.add(id))
+            .catch(() => undefined)
+        )
+    );
+    writeLocal(new Set());
+    onAccount = true;
+    setIds(saved);
+  } catch {
+    // Couldn't reach the server: fall back to this browser's list
+    onAccount = false;
+    setIds(readLocal());
+  }
+}
+
+export async function toggleFavorite(id: string) {
+  start();
+  const wasSaved = ids.has(id);
+  const next = new Set(ids);
+  if (wasSaved) next.delete(id);
+  else next.add(id);
+  setIds(next);
+
+  if (!onAccount) {
+    writeLocal(next);
+    return;
+  }
+
+  try {
+    if (wasSaved) await api.removeFavorite(id);
+    else await api.addFavorite(id);
+  } catch {
+    // Undo if the server refused
+    const undo = new Set(ids);
+    if (wasSaved) undo.add(id);
+    else undo.delete(id);
+    setIds(undo);
+  }
 }
 
 export function useFavoriteIds(): Set<string> {
-  const [ids, setIds] = useState<Set<string>>(() => new Set());
+  return useSyncExternalStore(
+    subscribe,
+    () => ids,
+    () => EMPTY
+  );
+}
 
-  useEffect(() => {
-    setIds(readFavorites());
-    function handleChange() {
-      setIds(readFavorites());
-    }
-    window.addEventListener(FAVORITES_EVENT, handleChange);
-    window.addEventListener("storage", handleChange);
-    return () => {
-      window.removeEventListener(FAVORITES_EVENT, handleChange);
-      window.removeEventListener("storage", handleChange);
-    };
-  }, []);
-
-  return ids;
+export function useIsFavorite(id: string): boolean {
+  return useFavoriteIds().has(id);
 }

@@ -10,6 +10,7 @@ import { ErrorBox, Loading, LoginRequired } from "@/components/PageStatus";
 import { useToast } from "@/components/ToastProvider";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { notifyRentalsChanged } from "@/lib/notifications";
 import { formatDate, formatPrice, rentalDays, todayISO, toItem, type Item } from "@/lib/types";
 
 function addDays(iso: string, days: number): string {
@@ -65,6 +66,7 @@ export default function CheckoutPage() {
       });
       setSubmitted(true);
       showToast("Request sent!");
+      notifyRentalsChanged();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Could not send request");
     } finally {

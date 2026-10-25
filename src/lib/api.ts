@@ -62,7 +62,68 @@ export interface ApiRental {
   item_image_url: string | null;
   owner_name: string | null;
   renter_name: string | null;
+  owner_id: number | null;
+  renter_reviewed: boolean;
+  owner_reviewed: boolean;
 }
+
+export interface ApiReview {
+  id: number;
+  rental_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string | null;
+  reviewer_name: string | null;
+  item_title: string | null;
+  reviewer_role: "renter" | "owner";
+}
+
+export interface ApiReviewSummary {
+  user_id: number;
+  full_name: string;
+  average_rating: number | null;
+  review_count: number;
+  reviews: ApiReview[];
+}
+
+export interface ApiRentalSummary {
+  requests_to_review: number;
+  rentals_to_pay: number;
+  reviews_to_write: number;
+  total: number;
+}
+
+export interface ApiAdminUser {
+  id: number;
+  full_name: string;
+  email: string;
+  role: string;
+  university: string | null;
+  campus: string | null;
+  listing_count: number;
+  rental_count: number;
+}
+
+export interface ApiAdminStats {
+  users: number;
+  listings: number;
+  available_listings: number;
+  rentals: number;
+  rentals_by_status: Record<string, number>;
+  paid_rentals: number;
+  revenue: string;
+}
+
+export type ItemUpdate = Partial<{
+  title: string;
+  description: string | null;
+  category: string;
+  condition: string;
+  price_per_day: string;
+  isbn: string | null;
+  pickup_location: string | null;
+  status: "Available" | "Unavailable";
+}>;
 
 export interface LoginResponse {
   access_token: string;
@@ -221,6 +282,39 @@ export const api = {
     apiFetch<ApiRental>(`/api/rentals/${id}/start`, { method: "PATCH" }),
   completeRental: (id: number) =>
     apiFetch<ApiRental>(`/api/rentals/${id}/complete`, { method: "PATCH" }),
+
+  updateItem: (id: number | string, data: ItemUpdate) =>
+    apiFetch<ApiItem>(`/api/items/${id}`, { method: "PATCH", body: data }),
+  deleteItem: (id: number | string) =>
+    apiFetch<null>(`/api/items/${id}`, { method: "DELETE" }),
+
+  changePassword: (current_password: string, new_password: string) =>
+    apiFetch<{ message: string }>("/api/auth/change-password", {
+      method: "POST",
+      body: { current_password, new_password },
+    }),
+
+  favorites: () => apiFetch<number[]>("/api/favorites"),
+  addFavorite: (itemId: number | string) =>
+    apiFetch<null>(`/api/favorites/${itemId}`, { method: "PUT" }),
+  removeFavorite: (itemId: number | string) =>
+    apiFetch<null>(`/api/favorites/${itemId}`, { method: "DELETE" }),
+
+  rentalSummary: () => apiFetch<ApiRentalSummary>("/api/rentals/summary"),
+
+  leaveReview: (rentalId: number, rating: number, comment: string | null) =>
+    apiFetch<ApiReview>(`/api/rentals/${rentalId}/review`, {
+      method: "POST",
+      body: { rating, comment },
+    }),
+  userReviews: (userId: number) =>
+    apiFetch<ApiReviewSummary>(`/api/users/${userId}/reviews`),
+
+  adminStats: () => apiFetch<ApiAdminStats>("/api/admin/stats"),
+  adminUsers: () => apiFetch<ApiAdminUser[]>("/api/admin/users"),
+  adminRentals: () => apiFetch<ApiRental[]>("/api/admin/rentals"),
+  adminRemoveItem: (id: number | string) =>
+    apiFetch<null>(`/api/admin/items/${id}`, { method: "DELETE" }),
 
   paymentConfig: () => apiFetch<{ enabled: boolean }>("/api/payments/config"),
   startCheckout: (rentalId: number) =>

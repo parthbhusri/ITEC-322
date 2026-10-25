@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { api, AUTH_EXPIRED_EVENT, getToken, setToken, type ApiUser } from "./api";
+import { syncFavoritesWithAccount } from "./favorites";
 
 interface AuthState {
   user: ApiUser | null;
@@ -57,6 +58,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     window.addEventListener(AUTH_EXPIRED_EVENT, handleExpired);
     return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleExpired);
   }, []);
+
+  // Saved items follow the account: load them on login, back to the
+  // browser's own list on logout
+  const userId = user?.id ?? null;
+  useEffect(() => {
+    if (loading) return;
+    syncFavoritesWithAccount(userId !== null);
+  }, [userId, loading]);
 
   const login = useCallback(async (email: string, password: string) => {
     const result = await api.login(email, password);

@@ -18,6 +18,8 @@ const STAMP_STYLES: Record<string, { color: string; rotate: string; label?: stri
   Cancelled: { color: SILVER, rotate: "-3deg" },
   Paid: { color: GREEN, rotate: "2deg" },
   Unpaid: { color: MOCHA, rotate: "-2deg" },
+  Unavailable: { color: SILVER, rotate: "2deg", label: "Paused" },
+  Removed: { color: SILVER, rotate: "-2deg" },
 };
 
 export default function StampBadge({ status }: { status: string }) {

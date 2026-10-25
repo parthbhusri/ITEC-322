@@ -12,7 +12,9 @@ import { api, imageSrc, type ApiRental } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useFavoriteIds } from "@/lib/favorites";
 import { formatDate, formatPrice, toItem, type Item } from "@/lib/types";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Pencil, Star } from "lucide-react";
+import { StarPicker } from "@/components/Stars";
+import { notifyRentalsChanged } from "@/lib/notifications";
 
 type Tab = "rentals" | "requests" | "listings" | "saved";
 const TABS: Tab[] = ["rentals", "requests", "listings", "saved"];
@@ -27,17 +29,86 @@ interface Data {
 const primaryButton = "btn btn-primary btn-sm";
 const secondaryButton = "btn btn-outline btn-sm";
 
+/** Inline form to rate the other student once a rental is returned. */
+function ReviewForm({
+  rental,
+  perspective,
+  onDone,
+  onCancel,
+}: {
+  rental: ApiRental;
+  perspective: "renter" | "owner";
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const showToast = useToast();
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const who = perspective === "renter" ? rental.owner_name ?? "the owner" : rental.renter_name ?? "the renter";
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (rating === 0) {
+      setError("Choose a star rating.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.leaveReview(rental.id, rating, comment.trim() || null);
+      showToast("Review posted");
+      notifyRentalsChanged();
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not post review");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-3 border-t border-silver/60 pt-4">
+      <p className="text-sm font-semibold">How was it with {who}?</p>
+      <StarPicker value={rating} onChange={setRating} label={`Rate ${who}`} />
+      <label htmlFor={`comment-${rental.id}`} className="sr-only">
+        Comment
+      </label>
+      <textarea
+        id={`comment-${rental.id}`}
+        rows={2}
+        maxLength={500}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Optional: on time? item as described? easy to meet?"
+        className="field"
+      />
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving} className="btn btn-primary btn-sm">
+          {saving ? "Posting…" : "Post review"}
+        </button>
+        <button type="button" onClick={onCancel} className="btn btn-outline btn-sm">
+          Not now
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function RentalRow({
   rental,
   perspective,
   children,
+  below,
 }: {
   rental: ApiRental;
   perspective: "renter" | "owner";
   children?: React.ReactNode;
+  below?: React.ReactNode;
 }) {
   return (
-    <div className="panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+    <div className="panel flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
       <Link href={`/items/${rental.item_id}`} className="group flex flex-1 items-center gap-4">
         <ItemImage
           title={rental.item_title ?? "Item"}
@@ -71,6 +142,8 @@ function RentalRow({
         {children}
       </div>
     </div>
+    {below}
+    </div>
   );
 }
 
@@ -97,6 +170,42 @@ function MyRentals() {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [reviewingId, setReviewingId] = useState<number | null>(null);
+
+  function reviewControls(rental: ApiRental, perspective: "renter" | "owner") {
+    if (rental.status !== "Completed") return null;
+    const done = perspective === "renter" ? rental.renter_reviewed : rental.owner_reviewed;
+    if (done) {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-mocha-500">
+          <Star className="h-3.5 w-3.5 fill-lavender-500 text-lavender-700" aria-hidden="true" />
+          Reviewed
+        </span>
+      );
+    }
+    if (reviewingId === rental.id) return null;
+    return (
+      <button type="button" onClick={() => setReviewingId(rental.id)} className={primaryButton}>
+        <Star className="h-3.5 w-3.5" aria-hidden="true" />
+        Leave a review
+      </button>
+    );
+  }
+
+  function reviewForm(rental: ApiRental, perspective: "renter" | "owner") {
+    if (reviewingId !== rental.id) return null;
+    return (
+      <ReviewForm
+        rental={rental}
+        perspective={perspective}
+        onCancel={() => setReviewingId(null)}
+        onDone={() => {
+          setReviewingId(null);
+          load();
+        }}
+      />
+    );
+  }
   const [paymentsEnabled, setPaymentsEnabled] = useState(false);
 
   const load = useCallback(
@@ -146,6 +255,7 @@ function MyRentals() {
       );
       if (results.some((r) => r?.payment_status === "Paid")) {
         showToast("Payment received — thank you!");
+        notifyRentalsChanged();
         load();
       } else {
         showToast("Payment is still processing. Refresh in a moment.");
@@ -158,6 +268,7 @@ function MyRentals() {
     try {
       await action();
       showToast(message);
+      notifyRentalsChanged();
       await load();
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Something went wrong");
@@ -244,7 +355,13 @@ function MyRentals() {
         ) : (
           <div className="flex flex-col gap-3">
             {data.rentals.map((rental) => (
-              <RentalRow key={rental.id} rental={rental} perspective="renter">
+              <RentalRow
+                key={rental.id}
+                rental={rental}
+                perspective="renter"
+                below={reviewForm(rental, "renter")}
+              >
+                {reviewControls(rental, "renter")}
                 {rental.status === "Requested" && (
                   <button
                     type="button"
@@ -280,7 +397,13 @@ function MyRentals() {
         ) : (
           <div className="flex flex-col gap-3">
             {data.requests.map((rental) => (
-              <RentalRow key={rental.id} rental={rental} perspective="owner">
+              <RentalRow
+                key={rental.id}
+                rental={rental}
+                perspective="owner"
+                below={reviewForm(rental, "owner")}
+              >
+                {reviewControls(rental, "owner")}
                 {rental.status === "Requested" && (
                   <>
                     <button
@@ -335,6 +458,7 @@ function MyRentals() {
         )
       ) : (
         <ItemGrid
+          editable={tab === "listings"}
           items={tab === "listings" ? data.listings : savedItems}
           empty={
             tab === "listings" ? (
@@ -362,12 +486,28 @@ function Empty({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ItemGrid({ items, empty }: { items: Item[]; empty: React.ReactNode }) {
+function ItemGrid({
+  items,
+  empty,
+  editable = false,
+}: {
+  items: Item[];
+  empty: React.ReactNode;
+  editable?: boolean;
+}) {
   if (items.length === 0) return <Empty>{empty}</Empty>;
   return (
     <div className="grid grid-cols-1 gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
-        <ItemCard key={item.id} item={item} />
+        <div key={item.id} className="flex flex-col gap-2">
+          <ItemCard item={item} />
+          {editable && (
+            <Link href={`/items/${item.id}/edit`} className="btn btn-ghost btn-sm self-center">
+              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+              Edit listing
+            </Link>
+          )}
+        </div>
       ))}
     </div>
   );
