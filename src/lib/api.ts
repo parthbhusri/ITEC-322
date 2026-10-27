@@ -1,3 +1,5 @@
+import { shrinkImage } from "./shrinkImage";
+
 // Small client for the FastAPI backend in /backend.
 // All requests go through `apiFetch`, which adds the login token and turns
 // error responses into readable messages.
@@ -265,9 +267,9 @@ export const api = {
     isbn: string | null;
     pickup_location: string | null;
   }) => apiFetch<ApiItem>("/api/items", { method: "POST", body: data }),
-  uploadItemImage: (id: number, file: File) => {
+  uploadItemImage: async (id: number, file: File) => {
     const form = new FormData();
-    form.append("image", file);
+    form.append("image", await shrinkImage(file));
     return apiFetch<ApiItem>(`/api/items/${id}/image`, { method: "POST", form });
   },
 

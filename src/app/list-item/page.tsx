@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import ItemCard from "@/components/ItemCard";
-import { ImagePlus, ScanBarcode } from "lucide-react";
+import { Camera, ImagePlus, ScanBarcode } from "lucide-react";
 import { Loading, LoginRequired } from "@/components/PageStatus";
 import { useToast } from "@/components/ToastProvider";
 import ConfettiBurst from "@/components/ConfettiBurst";
@@ -349,13 +349,31 @@ export default function ListItemPage() {
 
           <div>
             <span className="field-label">Photo (optional)</span>
-            <label
-              htmlFor="photo"
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-silver bg-white px-4 py-3 text-sm text-mocha-600 transition-colors hover:border-lavender-500 hover:bg-lavender-50"
-            >
-              <ImagePlus className="h-5 w-5 text-lavender-700" aria-hidden="true" />
-              {photo ? photo.name : "Choose a JPG, PNG or WebP up to 5 MB"}
-            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              {/* Phones and tablets only: opens the camera straight away */}
+              <label
+                htmlFor="photo-camera"
+                className="hidden cursor-pointer items-center justify-center gap-2 rounded-xl border border-lavender-500 bg-lavender-50 px-4 py-3 text-sm font-medium text-lavender-700 transition-colors hover:bg-lavender-100 pointer-coarse:flex"
+              >
+                <Camera className="h-5 w-5" aria-hidden="true" />
+                Take photo
+              </label>
+              <label
+                htmlFor="photo"
+                className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-silver bg-white px-4 py-3 text-sm text-mocha-600 transition-colors hover:border-lavender-500 hover:bg-lavender-50"
+              >
+                <ImagePlus className="h-5 w-5 shrink-0 text-lavender-700" aria-hidden="true" />
+                <span className="truncate">{photo ? photo.name : "Choose a JPG, PNG or WebP photo"}</span>
+              </label>
+            </div>
+            <input
+              id="photo-camera"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+              className="sr-only"
+            />
             <input
               id="photo"
               type="file"

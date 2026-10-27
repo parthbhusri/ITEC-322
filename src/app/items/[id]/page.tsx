@@ -7,7 +7,7 @@ import StampBadge from "@/components/StampBadge";
 import FavoriteButton from "@/components/FavoriteButton";
 import ItemImage from "@/components/ItemImage";
 import { ErrorBox, Loading } from "@/components/PageStatus";
-import { ChevronLeft, ImagePlus, MapPin, Pencil, Sparkles, Tag, UserRound } from "lucide-react";
+import { Camera, ChevronLeft, ImagePlus, MapPin, Pencil, Sparkles, Tag, UserRound } from "lucide-react";
 import { Stars } from "@/components/Stars";
 import { useToast } from "@/components/ToastProvider";
 import { api, ApiError, type ApiReviewSummary } from "@/lib/api";
@@ -136,17 +136,32 @@ export default function ItemDetailPage() {
             />
           </div>
           {isOwner && (
-            <label className="btn btn-ghost mt-3 w-full">
-              <ImagePlus className="h-4 w-4" aria-hidden="true" />
-              {uploading ? "Uploading…" : item.imageUrl ? "Change photo" : "Add a photo"}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handlePhoto}
-                disabled={uploading}
-                className="sr-only"
-              />
-            </label>
+            <div className="mt-3 flex gap-2">
+              {/* Phones and tablets only: opens the camera straight away */}
+              <label className="btn btn-ghost hidden flex-1 pointer-coarse:inline-flex">
+                <Camera className="h-4 w-4" aria-hidden="true" />
+                Take photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhoto}
+                  disabled={uploading}
+                  className="sr-only"
+                />
+              </label>
+              <label className="btn btn-ghost flex-1">
+                <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                {uploading ? "Uploading…" : item.imageUrl ? "Change photo" : "Add a photo"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handlePhoto}
+                  disabled={uploading}
+                  className="sr-only"
+                />
+              </label>
+            </div>
           )}
         </div>
 
